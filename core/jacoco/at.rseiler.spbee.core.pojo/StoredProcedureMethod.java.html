@@ -1,0 +1,280 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>StoredProcedureMethod.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">at.rseiler.spbee.core.pojo</a> &gt; <span class="el_source">StoredProcedureMethod.java</span></div><h1>StoredProcedureMethod.java</h1><pre class="source lang-java linenums">package at.rseiler.spbee.core.pojo;
+
+import at.rseiler.spbee.core.annotation.MappingConstructor;
+import at.rseiler.spbee.core.annotation.ReturnNull;
+import at.rseiler.spbee.core.annotation.RowMapper;
+import at.rseiler.spbee.core.annotation.StoredProcedure;
+import at.rseiler.spbee.core.util.StringUtil;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.type.MirroredTypeException;
+import java.util.*;
+import java.util.Map.Entry;
+
+/**
+ * @author Reinhard Seiler {@literal &lt;reinhard.seiler@gmail.com&gt;}
+ */
+public class StoredProcedureMethod {
+
+    private String qualifiedDtoClassName;
+    private String methodName;
+    private TypeInfo returnTypeInfo;
+<span class="fc" id="L24">    private List&lt;AnnotationInfo&gt; annotations = new ArrayList&lt;&gt;();</span>
+    private StoredProcedure storedProcedure;
+    private Optional&lt;RowMapper&gt; rowMapper;
+    private Optional&lt;ReturnNull&gt; returnNull;
+    private Optional&lt;MappingConstructor&gt; mappingConstructor;
+<span class="fc" id="L29">    private List&lt;Variable&gt; arguments = new LinkedList&lt;&gt;();</span>
+
+<span class="fc" id="L31">    private StoredProcedureMethod() {</span>
+<span class="fc" id="L32">    }</span>
+
+    /**
+     * Adds an variable to the stored procedure method.
+     *
+     * @param argument the argument of the method
+     */
+    public StoredProcedureMethod addArgument(Variable argument) {
+<span class="fc" id="L40">        arguments.add(argument);</span>
+<span class="fc" id="L41">        return this;</span>
+    }
+
+    /**
+     * Returns if null should be used instead of throwing an exception if an entity is expected but nothing is returned
+     * from the database.
+     *
+     * @return true if null should be used as return value
+     */
+    public boolean useNullInsteadOfAnException() {
+<span class="fc" id="L51">        return returnNull.isPresent();</span>
+    }
+
+    /**
+     * The qualified class name of the stored procedure method.
+     *
+     * @return the qualified class name
+     */
+    public String getQualifiedClassName() {
+<span class="fc" id="L60">        StringBuilder sb = new StringBuilder(storedProcedure.value());</span>
+
+<span class="fc bfc" id="L62" title="All 2 branches covered.">        if (mappingConstructor.isPresent()) {</span>
+<span class="fc" id="L63">            String name = StringUtil.transformToJavaClassName(mappingConstructor.get().value());</span>
+<span class="fc" id="L64">            sb.append(&quot;With&quot;).append(name);</span>
+        }
+
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        if (rowMapper.isPresent()) {</span>
+<span class="fc" id="L68">            String name = StringUtil.getSimpleClassName(getRowMapperType());</span>
+<span class="fc" id="L69">            sb.append(&quot;With&quot;).append(name);</span>
+        }
+
+<span class="fc" id="L72">        String spClassName = StringUtil.transformToJavaClassName(sb.toString());</span>
+<span class="fc" id="L73">        String spPackage = StringUtil.getPackage(qualifiedDtoClassName);</span>
+<span class="fc" id="L74">        return StringUtil.getQualifiedStoredProcedureClassName(spPackage, spClassName);</span>
+    }
+
+    /**
+     * The package of the of the stored procedure method.
+     *
+     * @return the package
+     */
+    public String getPackage() {
+<span class="fc" id="L83">        return StringUtil.getPackage(getQualifiedClassName());</span>
+    }
+
+    /**
+     * The simple class name.
+     *
+     * @return simple class name
+     */
+    public String getSimpleClassName() {
+<span class="fc" id="L92">        String spName = StringUtil.transformToJavaClassName(getStoredProcedureName());</span>
+<span class="fc" id="L93">        StringBuilder sb = new StringBuilder(spName);</span>
+
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        if (mappingConstructor.isPresent()) {</span>
+<span class="fc" id="L96">            String name = StringUtil.transformToJavaClassName(mappingConstructor.get().value());</span>
+<span class="fc" id="L97">            sb.append(&quot;With&quot;).append(name);</span>
+        }
+
+<span class="fc bfc" id="L100" title="All 2 branches covered.">        if (rowMapper.isPresent()) {</span>
+<span class="fc" id="L101">            String name = StringUtil.getSimpleClassName(getRowMapperType());</span>
+<span class="fc" id="L102">            sb.append(&quot;With&quot;).append(name);</span>
+        }
+
+<span class="fc" id="L105">        return sb.toString();</span>
+    }
+
+    /**
+     * The @StoredProcedure annotation.
+     *
+     * @return the @StoredProcedure annotation
+     */
+    public String getStoredProcedureName() {
+<span class="fc" id="L114">        return storedProcedure.value();</span>
+    }
+
+    /**
+     * Generates the name of the variable name which should be used for the DTO class.
+     *
+     * @return the field name
+     */
+    public String getDtoFieldName() {
+<span class="fc" id="L123">        return StringUtil.firstCharToLowerCase(getSimpleClassName());</span>
+    }
+
+    /**
+     * The method name.
+     *
+     * @return method name
+     */
+    public String getMethodName() {
+<span class="fc" id="L132">        return methodName;</span>
+    }
+
+    /**
+     * The TypeInfo of the return value of the stored procedure method.;
+     *
+     * @return the TypeInfo
+     */
+    public TypeInfo getReturnTypeInfo() {
+<span class="fc" id="L141">        return returnTypeInfo;</span>
+    }
+
+    /**
+     * The arguments of the stored procedure method.
+     *
+     * @return the arguments
+     */
+    public List&lt;Variable&gt; getArguments() {
+<span class="fc" id="L150">        return arguments;</span>
+    }
+
+    /**
+     * Returns the qualified class name of the RowMapper.
+     * @return the qualified class name
+     */
+    public String getQualifiedRowMapperClass() {
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        if (rowMapper.isPresent()) {</span>
+<span class="fc" id="L159">            return getRowMapperType();</span>
+        }
+
+<span class="fc bfc" id="L162" title="All 2 branches covered.">        String name = mappingConstructor.isPresent() ? mappingConstructor.get().value() : &quot;Default&quot;;</span>
+<span class="fc" id="L163">        String returnType = returnTypeInfo.getGenericType().orElse(returnTypeInfo.getType());</span>
+<span class="fc" id="L164">        return StringUtil.getQualifiedMapperClassName(returnType, name);</span>
+    }
+
+    /**
+     * The annotations of the stored procedure method.
+     *
+     * @return the annotations
+     */
+    public List&lt;AnnotationInfo&gt; getAnnotations() {
+<span class="fc" id="L173">        return annotations;</span>
+    }
+
+    /**
+     * Helper method to get the value of the annotation.
+     *
+     * @return the value
+     */
+    private String getRowMapperType() {
+        try {
+<span class="fc" id="L183">            return rowMapper.get().value().toString();</span>
+<span class="nc" id="L184">        } catch (MirroredTypeException mte) {</span>
+            // http://stackoverflow.com/a/10167558
+<span class="nc" id="L186">            return mte.getTypeMirror().toString();</span>
+        }
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L192">        return &quot;StoredProcedureMethod{&quot; +</span>
+                &quot;qualifiedDtoClassName='&quot; + qualifiedDtoClassName + '\'' +
+                &quot;, annotations=&quot; + annotations +
+                &quot;, storedProcedure=&quot; + storedProcedure +
+                &quot;, rowMapper=&quot; + rowMapper +
+                &quot;, returnNull=&quot; + returnNull +
+                &quot;, mappingConstructor=&quot; + mappingConstructor +
+                &quot;, methodName='&quot; + methodName + '\'' +
+                &quot;, returnTypeInfo=&quot; + returnTypeInfo +
+                &quot;, arguments=&quot; + arguments +
+                '}';
+    }
+
+    public static class Builder {
+
+        private final StoredProcedureMethod storedProcedureMethod;
+
+<span class="fc" id="L209">        public Builder() {</span>
+<span class="fc" id="L210">            this.storedProcedureMethod = new StoredProcedureMethod();</span>
+<span class="fc" id="L211">        }</span>
+
+        public Builder dtoClassName(String dtoClassName) {
+<span class="fc" id="L214">            storedProcedureMethod.qualifiedDtoClassName = dtoClassName;</span>
+<span class="fc" id="L215">            return this;</span>
+        }
+
+        public Builder methodName(String methodName) {
+<span class="fc" id="L219">            storedProcedureMethod.methodName = methodName;</span>
+<span class="fc" id="L220">            return this;</span>
+        }
+
+        public Builder returnTypeInfo(TypeInfo returnTypeInfo) {
+<span class="fc" id="L224">            storedProcedureMethod.returnTypeInfo = returnTypeInfo;</span>
+<span class="fc" id="L225">            return this;</span>
+        }
+
+        public Builder annotations(List&lt;AnnotationMirror&gt; annotations) {
+<span class="nc" id="L229">            List&lt;AnnotationInfo&gt; annotationInfos = new LinkedList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L231" title="All 2 branches missed.">            for (AnnotationMirror annotation : annotations) {</span>
+<span class="nc" id="L232">                AnnotationInfo annotationInfo = new AnnotationInfo(annotation.getAnnotationType().toString());</span>
+
+<span class="nc bnc" id="L234" title="All 2 branches missed.">                for (Entry&lt;? extends ExecutableElement, ? extends AnnotationValue&gt; entry : annotation.getElementValues().entrySet()) {</span>
+<span class="nc" id="L235">                    String simpleName = entry.getKey().getSimpleName().toString();</span>
+<span class="nc" id="L236">                    Object value = entry.getValue().getValue();</span>
+<span class="nc" id="L237">                    String type = entry.getValue().toString();</span>
+<span class="nc" id="L238">                    annotationInfo.addAnnotationValueInfo(new AnnotationValueInfo(simpleName, value, type));</span>
+<span class="nc" id="L239">                }</span>
+
+<span class="nc" id="L241">                annotationInfos.add(annotationInfo);</span>
+<span class="nc" id="L242">            }</span>
+
+<span class="nc" id="L244">            storedProcedureMethod.annotations = annotationInfos;</span>
+<span class="nc" id="L245">            return this;</span>
+        }
+
+        public Builder annotationInfos(List&lt;AnnotationInfo&gt; annotations) {
+<span class="fc" id="L249">            storedProcedureMethod.annotations = annotations;</span>
+<span class="fc" id="L250">            return this;</span>
+        }
+
+        public Builder storedProcedure(StoredProcedure storedProcedure) {
+<span class="fc" id="L254">            storedProcedureMethod.storedProcedure = storedProcedure;</span>
+<span class="fc" id="L255">            return this;</span>
+        }
+
+        public Builder rowMapper(RowMapper rowMapper) {
+<span class="fc" id="L259">            storedProcedureMethod.rowMapper = Optional.ofNullable(rowMapper);</span>
+<span class="fc" id="L260">            return this;</span>
+        }
+
+        public Builder returnNull(ReturnNull returnNull) {
+<span class="fc" id="L264">            storedProcedureMethod.returnNull = Optional.ofNullable(returnNull);</span>
+<span class="fc" id="L265">            return this;</span>
+        }
+
+        public Builder mappingConstructor(MappingConstructor mappingConstructor) {
+<span class="fc" id="L269">            storedProcedureMethod.mappingConstructor = Optional.ofNullable(mappingConstructor);</span>
+<span class="fc" id="L270">            return this;</span>
+        }
+
+        public StoredProcedureMethod build() {
+<span class="fc" id="L274">            return storedProcedureMethod;</span>
+        }
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.2.201409121644</span></div></body></html>

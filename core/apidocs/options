@@ -1,0 +1,24 @@
+-classpath
+'C:/Users/reinhard/.m2/repository/com/sun/codemodel/codemodel/2.6/codemodel-2.6.jar;C:/Users/reinhard/.m2/repository/at/rseiler/pom-project/annotation/1.1/annotation-1.1.jar'
+-encoding
+'UTF-8'
+-private
+-sourcepath
+'D:/Users/reinhard/workspace/intellij/spBee/core/src/main/java;D:/Users/reinhard/workspace/intellij/spBee/core/target/generated-sources/annotations'
+-author
+-bottom
+'Copyright &#169; 2015. All rights reserved.'
+-charset
+'UTF-8'
+-d
+'D:/Users/reinhard/workspace/intellij/spBee/core/target/site/apidocs'
+-docencoding
+'UTF-8'
+-doctitle
+'core 1.0 API'
+-linkoffline
+'http://docs.oracle.com/javase/8/docs/api' 'D:/Users/reinhard/workspace/intellij/spBee/core/target/javadoc-bundle-options'
+-use
+-version
+-windowtitle
+'core 1.0 API'

@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>SPBeeAnnotationProcessor.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">at.rseiler.spbee.core</a> &gt; <span class="el_source">SPBeeAnnotationProcessor.java</span></div><h1>SPBeeAnnotationProcessor.java</h1><pre class="source lang-java linenums">package at.rseiler.spbee.core;
+
+import at.rseiler.spbee.core.annotation.Dao;
+import at.rseiler.spbee.core.annotation.Entity;
+import at.rseiler.spbee.core.annotation.ResultSet;
+import at.rseiler.spbee.core.collector.DtoCollector;
+import at.rseiler.spbee.core.collector.EntityClassCollector;
+import at.rseiler.spbee.core.collector.ResultSetCollector;
+import at.rseiler.spbee.core.generator.DtoGenerator;
+import at.rseiler.spbee.core.generator.MapperGenerator;
+import at.rseiler.spbee.core.generator.StoredProcedureGenerator;
+import at.rseiler.spbee.core.pojo.DtoClass;
+import at.rseiler.spbee.core.pojo.MapperClass;
+import at.rseiler.spbee.core.pojo.ResultSetClass;
+import com.sun.codemodel.JClassAlreadyExistsException;
+
+import javax.annotation.processing.*;
+import javax.lang.model.SourceVersion;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import javax.tools.Diagnostic.Kind;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.*;
+
+/**
+ * The Annotation Processor which will be invoked in the pre-compile phase.
+ * &lt;p&gt;
+ * Registers for the following annotations:
+ * &lt;ul&gt;
+ * &lt;li&gt;at.rseiler.spbee.core.annotation.ResultSet&lt;/li&gt;
+ * &lt;li&gt;at.rseiler.spbee.core.annotation.Entity&lt;/li&gt;
+ * &lt;li&gt;at.rseiler.spbee.core.annotation.Dao&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Reinhard Seiler {@literal &lt;reinhard.seiler@gmail.com&gt;}
+ */
+@SupportedSourceVersion(SourceVersion.RELEASE_8)
+@SupportedAnnotationTypes(value = {
+        &quot;at.rseiler.spbee.core.annotation.ResultSet&quot;,
+        &quot;at.rseiler.spbee.core.annotation.Entity&quot;,
+        &quot;at.rseiler.spbee.core.annotation.Dao&quot;
+})
+<span class="nc" id="L45">public class SPBeeAnnotationProcessor extends AbstractProcessor {</span>
+
+    public static final String SPBEE_ANNOTATION_PREFIX = &quot;at.rseiler.spbee.core.annotation&quot;;
+
+    @Override
+    public synchronized void init(ProcessingEnvironment processingEnv) {
+<span class="nc" id="L51">        super.init(processingEnv);</span>
+<span class="nc" id="L52">    }</span>
+
+    @Override
+    public boolean process(Set&lt;? extends TypeElement&gt; annotations, RoundEnvironment roundEnvironment) {
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        if (!annotations.isEmpty()) {</span>
+<span class="nc" id="L57">            Map&lt;String, ResultSetClass&gt; resultSetsMap = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L58">            List&lt;MapperClass&gt; mapperClasses = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L59">            List&lt;DtoClass&gt; dtoClasses = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L61" title="All 2 branches missed.">            for (TypeElement typeElement : annotations) {</span>
+<span class="nc" id="L62">                Set&lt;? extends Element&gt; elements = roundEnvironment.getElementsAnnotatedWith(typeElement);</span>
+
+                try {
+<span class="nc bnc" id="L65" title="All 2 branches missed.">                    if (typeElement.toString().equals(ResultSet.class.getCanonicalName())) {</span>
+<span class="nc" id="L66">                        resultSetsMap = new ResultSetCollector(elements).collect().getResultSetMap();</span>
+<span class="nc bnc" id="L67" title="All 2 branches missed.">                    } else if (typeElement.toString().equals(Entity.class.getCanonicalName())) {</span>
+<span class="nc" id="L68">                        mapperClasses = new EntityClassCollector(processingEnv, elements).collect().getMapperClasses();</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">                    } else if (typeElement.toString().equals(Dao.class.getCanonicalName())) {</span>
+<span class="nc" id="L70">                        dtoClasses = new DtoCollector(elements).collect().getDtoClasses();</span>
+                    }
+<span class="nc" id="L72">                } catch (JClassAlreadyExistsException | IOException e) {</span>
+<span class="nc" id="L73">                    processingEnv.getMessager().printMessage(Kind.ERROR, getStackTrace(e));</span>
+<span class="nc" id="L74">                }</span>
+<span class="nc" id="L75">            }</span>
+
+            try {
+<span class="nc" id="L78">                new MapperGenerator(processingEnv).generateMappers(mapperClasses);</span>
+<span class="nc" id="L79">                new StoredProcedureGenerator(processingEnv, resultSetsMap).generateStoredProcedureClasses(dtoClasses);</span>
+<span class="nc" id="L80">                new DtoGenerator(processingEnv).generateDtoClasses(dtoClasses, resultSetsMap);</span>
+<span class="nc" id="L81">            } catch (ClassNotFoundException | JClassAlreadyExistsException | IOException e) {</span>
+<span class="nc" id="L82">                processingEnv.getMessager().printMessage(Kind.ERROR, getStackTrace(e));</span>
+<span class="nc" id="L83">            }</span>
+        }
+
+<span class="nc" id="L86">        return true;</span>
+    }
+
+    private static String getStackTrace(Exception exception) {
+<span class="nc" id="L90">        StringWriter sw = new StringWriter();</span>
+        try {
+<span class="nc" id="L92">            exception.printStackTrace(new PrintWriter(sw));</span>
+<span class="nc" id="L93">            return sw.toString();</span>
+        } finally {
+<span class="nc" id="L95">            try {</span>
+<span class="nc" id="L96">                sw.close();</span>
+<span class="nc" id="L97">            } catch (IOException ignore) {</span>
+<span class="nc" id="L98">            }</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.2.201409121644</span></div></body></html>

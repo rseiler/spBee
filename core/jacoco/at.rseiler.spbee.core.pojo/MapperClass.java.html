@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>MapperClass.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">at.rseiler.spbee.core.pojo</a> &gt; <span class="el_source">MapperClass.java</span></div><h1>MapperClass.java</h1><pre class="source lang-java linenums">package at.rseiler.spbee.core.pojo;
+
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ * Holds the information to generate the RowMapper class.
+ *
+ * @author Reinhard Seiler {@literal &lt;reinhard.seiler@gmail.com&gt;}
+ */
+public class MapperClass {
+
+    private final String qualifiedMapperClassName;
+    private final String type;
+<span class="fc" id="L15">    private final List&lt;Variable&gt; variables = new LinkedList&lt;&gt;();</span>
+
+    /**
+     * Constructs a new MapperClass.
+     *
+     * @param qualifiedMapperClassName the qualified class name of the mapper class
+     * @param type                     the type of the mapped class
+     */
+<span class="fc" id="L23">    public MapperClass(String qualifiedMapperClassName, String type) {</span>
+<span class="fc" id="L24">        this.qualifiedMapperClassName = qualifiedMapperClassName;</span>
+<span class="fc" id="L25">        this.type = type;</span>
+<span class="fc" id="L26">    }</span>
+
+    /**
+     * Adds a variable, which represents a parameter of the constructor of the mapped class.
+     *
+     * @param variable the variable which should be added
+     */
+    public void addVariable(Variable variable) {
+<span class="fc" id="L34">        variables.add(variable);</span>
+<span class="fc" id="L35">    }</span>
+
+    /**
+     * Returns the variables which represent the parameters of the constructor of the mapped class.
+     *
+     * @return the variables
+     */
+    public List&lt;Variable&gt; getVariables() {
+<span class="fc" id="L43">        return variables;</span>
+    }
+
+    /**
+     * Returns the qualified class name of the mapper class.
+     *
+     * @return the qualified class name
+     */
+    public String getQualifiedMapperClassName() {
+<span class="fc" id="L52">        return qualifiedMapperClassName;</span>
+    }
+
+    /**
+     * Returns the type of the mapped class.
+     *
+     * @return the type
+     */
+    public String getType() {
+<span class="fc" id="L61">        return type;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L66">        return &quot;MapperClass{&quot; +</span>
+                &quot;variables=&quot; + variables +
+                &quot;, qualifiedMapperClassName='&quot; + qualifiedMapperClassName + '\'' +
+                &quot;, type='&quot; + type + '\'' +
+                '}';
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.2.201409121644</span></div></body></html>

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>TypeInfo.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">at.rseiler.spbee.core.pojo</a> &gt; <span class="el_source">TypeInfo.java</span></div><h1>TypeInfo.java</h1><pre class="source lang-java linenums">package at.rseiler.spbee.core.pojo;
+
+import java.util.Optional;
+
+/**
+ * Holds the type information which consists of the type and the generic type.
+ *
+ * @author Reinhard Seiler {@literal &lt;reinhard.seiler@gmail.com&gt;}
+ */
+public class TypeInfo {
+
+    private final String type;
+    private final Optional&lt;String&gt; genericType;
+
+    /**
+     * Constructs a new TypeInfo so that it represents a basic type.
+     *
+     * @param type the type
+     */
+    public TypeInfo(String type) {
+<span class="fc" id="L21">        this(type, Optional.empty());</span>
+<span class="fc" id="L22">    }</span>
+
+    /**
+     * Constructs a new TypeInfo so that it represents a type with generics.
+     *
+     * @param type        the type
+     * @param genericType the generic type
+     */
+    public TypeInfo(String type, String genericType) {
+<span class="fc" id="L31">        this(type, Optional.of(genericType));</span>
+<span class="fc" id="L32">    }</span>
+
+    /**
+     * Constructs a new TypeInfo so that it represents a basic type or a type with generics.
+     *
+     * @param type        the type
+     * @param genericType the generic type
+     */
+<span class="fc" id="L40">    public TypeInfo(String type, Optional&lt;String&gt; genericType) {</span>
+<span class="fc" id="L41">        this.type = type;</span>
+<span class="fc" id="L42">        this.genericType = genericType;</span>
+<span class="fc" id="L43">    }</span>
+
+    /**
+     * Returns the base type.
+     * E.g.: String -&gt; String; List&lt;String&gt; -&gt; List
+     *
+     * @return the base type
+     */
+    public String getType() {
+<span class="fc" id="L52">        return type;</span>
+    }
+
+    /**
+     * Returns the generic type.
+     * E.g.: List&lt;String&gt; -&gt; String; String -&gt; Optional.empty()
+     *
+     * @return the generic type
+     */
+    public Optional&lt;String&gt; getGenericType() {
+<span class="fc" id="L62">        return genericType;</span>
+    }
+
+    /**
+     * Returns the generic type if it exists otherwise the base type.
+     * E.g.: String -&gt; String; List&lt;String&gt; -&gt; String
+     *
+     * @return the generic type or the base type
+     */
+    public String getGenericTypeOrType() {
+<span class="fc" id="L72">        return genericType.orElse(type);</span>
+    }
+
+    /**
+     * Returns the string representation of the type and generic type.
+     *
+     * @return the string representation
+     */
+    public String asString() {
+<span class="pc bpc" id="L81" title="1 of 2 branches missed.">        return genericType.isPresent() ? type + '&lt;' + genericType + '&gt;' : type;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L86">        return &quot;TypeInfo{&quot; +</span>
+                &quot;type='&quot; + type + '\'' +
+                &quot;, genericType=&quot; + genericType +
+                '}';
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.2.201409121644</span></div></body></html>

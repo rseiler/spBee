@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>StringUtil.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">at.rseiler.spbee.core.util</a> &gt; <span class="el_source">StringUtil.java</span></div><h1>StringUtil.java</h1><pre class="source lang-java linenums">package at.rseiler.spbee.core.util;
+
+import at.rseiler.spbee.core.pojo.TypeInfo;
+
+/**
+ * Some string util methods.
+ *
+ * @author Reinhard Seiler {@literal &lt;reinhard.seiler@gmail.com&gt;}
+ */
+public final class StringUtil {
+
+<span class="nc" id="L12">    private StringUtil() {</span>
+<span class="nc" id="L13">    }</span>
+
+    /**
+     * Changes the first char to lower case. No other letters are changed.
+     *
+     * @param value the String to be changed
+     * @return the String with the first char as lower case
+     */
+    public static String firstCharToLowerCase(String value) {
+<span class="fc" id="L22">        return Character.toLowerCase(value.charAt(0)) + value.substring(1);</span>
+    }
+
+    /**
+     * Transforms the name to a Java class name.
+     * Removes all underline chars (_) and change each following char to upper case.
+     * E.g.: sp_get_user will be transformed to SpGetUser
+     *
+     * @param spName the stored procedure name
+     * @return the Java class name
+     */
+    public static String transformToJavaClassName(String spName) {
+<span class="fc" id="L34">        StringBuilder sb = new StringBuilder(spName.length());</span>
+<span class="fc" id="L35">        sb.append(Character.toUpperCase(spName.charAt(0)));</span>
+
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        for (int i = 1; i &lt; spName.length(); i++) {</span>
+<span class="fc" id="L38">            char c = spName.charAt(i);</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">            if (c != '_') {</span>
+<span class="fc bfc" id="L40" title="All 2 branches covered.">                if (spName.charAt(i - 1) == '_') {</span>
+<span class="fc" id="L41">                    sb.append(Character.toUpperCase(c));</span>
+                } else {
+<span class="fc" id="L43">                    sb.append(c);</span>
+                }
+            }
+        }
+
+<span class="fc" id="L48">        return sb.toString();</span>
+    }
+
+    /**
+     * Create the TypeInfo of a type string.
+     *
+     * @param type the type string
+     * @return the TypeInfo
+     */
+    public static TypeInfo getTypeInfo(String type) {
+        TypeInfo typeInfo;
+
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if (type.contains(&quot;&lt;&quot;)) {</span>
+<span class="fc" id="L61">            String[] split = type.split(&quot;&lt;|&gt;&quot;);</span>
+<span class="fc" id="L62">            typeInfo = new TypeInfo(split[0], split[1]);</span>
+<span class="fc" id="L63">        } else {</span>
+<span class="fc" id="L64">            typeInfo = new TypeInfo(type);</span>
+        }
+
+<span class="fc" id="L67">        return typeInfo;</span>
+    }
+
+    /**
+     * Extracts the simple class name of the full qualified class name.
+     *
+     * @param qualifiedClassName the full qualified class name
+     * @return the simple class name
+     */
+    public static String getSimpleClassName(String qualifiedClassName) {
+<span class="fc" id="L77">        return qualifiedClassName.substring(qualifiedClassName.lastIndexOf('.') + 1);</span>
+    }
+
+    /**
+     * Extracts the package name of the full qualified class name.
+     *
+     * @param qualifiedClassName the full qualified class name
+     * @return the package name
+     */
+    public static String getPackage(String qualifiedClassName) {
+<span class="fc" id="L87">        return qualifiedClassName.substring(0, qualifiedClassName.lastIndexOf('.'));</span>
+    }
+
+
+    /**
+     * Generates the full qualified class name for a RowMapper class.
+     *
+     * @param qualifiedClassName the full qualified class name
+     * @param name               the name of the RowMapper
+     * @return the full qualified class name of the RowMapper
+     */
+    public static String getQualifiedMapperClassName(String qualifiedClassName, String name) {
+<span class="fc" id="L99">        return getPackage(qualifiedClassName) + &quot;.mapper.&quot; + getSimpleClassName(qualifiedClassName) + transformToJavaClassName(name) + &quot;Mapper&quot;;</span>
+    }
+
+
+    /**
+     * Generates the full qualified class name for a stored procedure class.
+     *
+     * @param spPackage   the package of the stored procedure
+     * @param spClassName the class name of the stored procedure class name
+     * @return the full qualified class name of the stored procedure
+     */
+    public static String getQualifiedStoredProcedureClassName(String spPackage, String spClassName) {
+<span class="fc" id="L111">        return spPackage + &quot;.storedprocedure.&quot; + spClassName;</span>
+    }
+
+    /**
+     * Generates the full qualified class name for a stored procedure class.
+     *
+     * @param type the type of the DTO
+     * @return the full qualified class name fo the DTO
+     */
+    public static String getQualifiedDtoClassName(String type) {
+<span class="fc" id="L121">        return getPackage(type) + &quot;.&quot; + getSimpleClassName(type) + &quot;Impl&quot;;</span>
+    }
+
+    /**
+     * Retrieves the most fitting {@link org.springframework.jdbc.core.SqlParameter} type based on the type
+     *
+     * @param type the type
+     * @return the parameter name
+     */
+    public static String getSqlParameter(String type) {
+<span class="pc bpc" id="L131" title="67 of 73 branches missed.">        switch (type) {</span>
+            case &quot;boolean&quot;:
+            case &quot;java.lang.Boolean&quot;:
+<span class="nc" id="L134">                return &quot;BOOLEAN&quot;;</span>
+            case &quot;byte&quot;:
+            case &quot;java.lang.Byte&quot;:
+<span class="nc" id="L137">                return &quot;TINYINT&quot;;</span>
+            case &quot;short&quot;:
+            case &quot;java.lang.Short&quot;:
+<span class="nc" id="L140">                return &quot;SMALLINT&quot;;</span>
+            case &quot;int&quot;:
+            case &quot;java.lang.Integer&quot;:
+<span class="fc" id="L143">                return &quot;INTEGER&quot;;</span>
+            case &quot;long&quot;:
+            case &quot;java.lang.Long&quot;:
+<span class="nc" id="L146">                return &quot;BIGINT&quot;;</span>
+            case &quot;float&quot;:
+            case &quot;java.lang.Float&quot;:
+<span class="nc" id="L149">                return &quot;FLOAT&quot;;</span>
+            case &quot;double&quot;:
+            case &quot;java.lang.Double&quot;:
+<span class="nc" id="L152">                return &quot;DOUBLE&quot;;</span>
+            case &quot;byte[]&quot;:
+            case &quot;java.lang.Byte[]&quot;:
+<span class="nc" id="L155">                return &quot;BINARY&quot;;</span>
+            case &quot;java.lang.String&quot;:
+<span class="fc" id="L157">                return &quot;VARCHAR&quot;;</span>
+            case &quot;java.sql.Date&quot;:
+            case &quot;java.util.Date&quot;:
+<span class="nc" id="L160">                return &quot;DATE&quot;;</span>
+            case &quot;java.math.BigDecimal&quot;:
+<span class="nc" id="L162">                return &quot;DOUBLE&quot;;</span>
+            default:
+<span class="nc" id="L164">                throw new RuntimeException(&quot;Unknown SqlType: &quot; + type);</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.2.201409121644</span></div></body></html>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>EntityClassCollector.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">at.rseiler.spbee.core.collector</a> &gt; <span class="el_source">EntityClassCollector.java</span></div><h1>EntityClassCollector.java</h1><pre class="source lang-java linenums">package at.rseiler.spbee.core.collector;
+
+import at.rseiler.spbee.core.annotation.MappingConstructor;
+import at.rseiler.spbee.core.pojo.MapperClass;
+import at.rseiler.spbee.core.pojo.Variable;
+import at.rseiler.spbee.core.util.StringUtil;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.*;
+import javax.tools.Diagnostic.Kind;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+/**
+ * Collects all MappingConstructors of all Entity classes which are annotated with {@link at.rseiler.spbee.core.annotation.Entity}.
+ * &lt;p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;collects the constructors annotated with @MappingConstructor. If no constructor is annotated with @MappingConstructor than the first public constructor is used.
+ * &lt;ul&gt;
+ * &lt;li&gt;collects all parameters&lt;/li&gt;
+ * &lt;li&gt;reads the @MappingConstructor annotation&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;/li&gt;
+ * &lt;li&gt;with this data a MapperClass object is created&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Reinhard Seiler {@literal &lt;reinhard.seiler@gmail.com&gt;}
+ */
+public class EntityClassCollector {
+
+    private final ProcessingEnvironment processingEnv;
+    private final Set&lt;? extends Element&gt; elements;
+<span class="nc" id="L37">    private final List&lt;MapperClass&gt; mapperClasses = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L39">    public EntityClassCollector(ProcessingEnvironment processingEnv, Set&lt;? extends Element&gt; elements) {</span>
+<span class="nc" id="L40">        this.processingEnv = processingEnv;</span>
+<span class="nc" id="L41">        this.elements = elements;</span>
+<span class="nc" id="L42">    }</span>
+
+    /**
+     * The MapperClass classes.
+     *
+     * @return the MapperClass classes
+     */
+    public List&lt;MapperClass&gt; getMapperClasses() {
+<span class="nc" id="L50">        return mapperClasses;</span>
+    }
+
+    /**
+     * Collects all MappingConstructors of all Entity classes which are annotated with {@link at.rseiler.spbee.core.annotation.Entity}.
+     *
+     * @return itself
+     */
+    public EntityClassCollector collect() {
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        for (Element entityClassElement : elements) {</span>
+<span class="nc" id="L60">            String qualifiedClassName = entityClassElement.toString();</span>
+<span class="nc" id="L61">            boolean hasMappingConstructor = hasMappingConstructor(entityClassElement);</span>
+
+<span class="nc" id="L63">            List&lt;Element&gt; elementList = entityClassElement.getEnclosedElements().stream()</span>
+<span class="nc" id="L64">                    .filter(isApplicableConstructor(hasMappingConstructor))</span>
+<span class="nc" id="L65">                    .collect(Collectors.toList());</span>
+
+<span class="nc bnc" id="L67" title="All 4 branches missed.">            if (hasMappingConstructor || elementList.size() == 1) {</span>
+<span class="nc" id="L68">                elementList.forEach(collectMappingConstructor(qualifiedClassName));</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">            } else if (elementList.isEmpty()) {</span>
+<span class="nc" id="L70">                processingEnv.getMessager().printMessage(Kind.ERROR, &quot;No public constructor for the Entity class '&quot; + qualifiedClassName + &quot;'&quot;);</span>
+<span class="nc bnc" id="L71" title="All 2 branches missed.">            } else if (elementList.size() &gt; 1) {</span>
+<span class="nc" id="L72">                processingEnv.getMessager().printMessage(Kind.ERROR, &quot;More than one public constructor and none of these has a @MappingConstructor annotation for '&quot; + qualifiedClassName + &quot;'&quot;);</span>
+            } else {
+<span class="nc" id="L74">                processingEnv.getMessager().printMessage(Kind.ERROR, &quot;No applicable constructor for '&quot; + qualifiedClassName + &quot;'&quot;);</span>
+            }
+<span class="nc" id="L76">        }</span>
+
+<span class="nc" id="L78">        return this;</span>
+    }
+
+    /**
+     * Checks if the element is a constructor which is is public.
+     * If an constructor annotated with {@link at.rseiler.spbee.core.annotation.MappingConstructor} exists than all other
+     * constructors without that annotation will be ignored.
+     * If no other constructor is annotated with {@link at.rseiler.spbee.core.annotation.MappingConstructor} than the
+     * constructor without the {@link at.rseiler.spbee.core.annotation.MappingConstructor} is considered.
+     *
+     * @param annotatedMappingConstructorExists if an constructor with the {@link at.rseiler.spbee.core.annotation.MappingConstructor} annotation exists
+     * @return the predicate
+     */
+    private Predicate&lt;Element&gt; isApplicableConstructor(boolean annotatedMappingConstructorExists) {
+<span class="nc" id="L92">        return element -&gt; {</span>
+<span class="nc bnc" id="L93" title="All 4 branches missed.">            boolean valid = !annotatedMappingConstructorExists || element.getAnnotation(MappingConstructor.class) != null;</span>
+<span class="nc bnc" id="L94" title="All 6 branches missed.">            return element.getKind() == ElementKind.CONSTRUCTOR &amp;&amp; element.getModifiers().contains(Modifier.PUBLIC) &amp;&amp; valid;</span>
+        };
+    }
+
+    /**
+     * Collects all mapping constructors.
+     *
+     * @param qualifiedClassName the qualified class name
+     * @return the consumer
+     */
+    private Consumer&lt;Element&gt; collectMappingConstructor(String qualifiedClassName) {
+<span class="nc" id="L105">        return element -&gt; {</span>
+<span class="nc" id="L106">            MappingConstructor mappingConstructor = element.getAnnotation(MappingConstructor.class);</span>
+<span class="nc bnc" id="L107" title="All 2 branches missed.">            String name = mappingConstructor != null ? mappingConstructor.value() : &quot;Default&quot;;</span>
+<span class="nc" id="L108">            String qualifiedMapperClassName = StringUtil.getQualifiedMapperClassName(qualifiedClassName, name);</span>
+<span class="nc" id="L109">            MapperClass mapperClass = new MapperClass(qualifiedMapperClassName, qualifiedClassName);</span>
+
+<span class="nc bnc" id="L111" title="All 2 branches missed.">            for (VariableElement variableElement : ((ExecutableElement) element).getParameters()) {</span>
+<span class="nc" id="L112">                mapperClass.addVariable(new Variable(variableElement.getSimpleName().toString(), variableElement.asType().toString()));</span>
+<span class="nc" id="L113">            }</span>
+
+<span class="nc" id="L115">            mapperClasses.add(mapperClass);</span>
+<span class="nc" id="L116">        };</span>
+    }
+
+    /**
+     * Checks if an constructor annotated with {@link at.rseiler.spbee.core.annotation.MappingConstructor} exists.
+     *
+     * @param entityClassElement the element
+     * @return true if an {@link at.rseiler.spbee.core.annotation.MappingConstructor} exists
+     */
+    private boolean hasMappingConstructor(Element entityClassElement) {
+<span class="nc" id="L126">        return entityClassElement.getEnclosedElements().stream()</span>
+<span class="nc" id="L127">                .anyMatch(element -&gt; isMappingConstructor(element));</span>
+    }
+
+    /**
+     * Checks if the elements is annotated with {@link at.rseiler.spbee.core.annotation.MappingConstructor}.
+     *
+     * @param element the element
+     * @return true if is annotated with {@link at.rseiler.spbee.core.annotation.MappingConstructor}
+     */
+    private boolean isMappingConstructor(Element element) {
+<span class="nc bnc" id="L137" title="All 4 branches missed.">        return element.getKind() == ElementKind.CONSTRUCTOR &amp;&amp; element.getModifiers().contains(Modifier.PUBLIC) &amp;&amp;</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">                element.getAnnotation(MappingConstructor.class) != null;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.2.201409121644</span></div></body></html>

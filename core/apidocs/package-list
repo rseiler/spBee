@@ -1,0 +1,8 @@
+at.rseiler.spbee.core
+at.rseiler.spbee.core.annotation
+at.rseiler.spbee.core.collector
+at.rseiler.spbee.core.exception
+at.rseiler.spbee.core.generator
+at.rseiler.spbee.core.pojo
+at.rseiler.spbee.core.pojo.annotation
+at.rseiler.spbee.core.util

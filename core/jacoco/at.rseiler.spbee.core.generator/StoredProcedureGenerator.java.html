@@ -1,0 +1,199 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>StoredProcedureGenerator.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">at.rseiler.spbee.core.generator</a> &gt; <span class="el_source">StoredProcedureGenerator.java</span></div><h1>StoredProcedureGenerator.java</h1><pre class="source lang-java linenums">package at.rseiler.spbee.core.generator;
+
+import at.rseiler.spbee.core.pojo.*;
+import at.rseiler.spbee.core.util.CodeModelUtil;
+import at.rseiler.spbee.core.util.StringUtil;
+import com.sun.codemodel.*;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.sql.Types;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+/**
+ * Generator for the StoredProcedure classes.
+ *
+ * @author Reinhard Seiler {@literal &lt;reinhard.seiler@gmail.com&gt;}
+ */
+public class StoredProcedureGenerator extends AbstractGenerator {
+
+    private static final String SPRING_SQL_RETURN_RESULT_SET = &quot;org.springframework.jdbc.core.SqlReturnResultSet&quot;;
+    private static final String SPRING_STORED_PROCEDURE = &quot;org.springframework.jdbc.object.StoredProcedure&quot;;
+    private static final String SPRING_SQL_PARAMETER = &quot;org.springframework.jdbc.core.SqlParameter&quot;;
+
+    private final Map&lt;String, ResultSetClass&gt; resultSetsMap;
+
+    public StoredProcedureGenerator(ProcessingEnvironment processingEnv, Map&lt;String, ResultSetClass&gt; resultSetsMap) {
+<span class="fc" id="L31">        super(processingEnv);</span>
+<span class="fc" id="L32">        this.resultSetsMap = resultSetsMap;</span>
+<span class="fc" id="L33">    }</span>
+
+    public void generateStoredProcedureClasses(List&lt;DtoClass&gt; dtoClasses) throws JClassAlreadyExistsException, IOException {
+<span class="fc" id="L36">        Set&lt;String&gt; storedProcedureNames = new HashSet&lt;&gt;();</span>
+
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        for (DtoClass dtoClass : dtoClasses) {</span>
+<span class="fc bfc" id="L39" title="All 2 branches covered.">            for (StoredProcedureMethod storedProcedureMethod : dtoClass.getStoredProcedureMethods()) {</span>
+                // checks if the stored procedure already exists
+<span class="pc bpc" id="L41" title="1 of 2 branches missed.">                if (!storedProcedureNames.contains(storedProcedureMethod.getQualifiedClassName())) {</span>
+<span class="fc" id="L42">                    generateStoredProcedure(storedProcedureMethod);</span>
+<span class="fc" id="L43">                    storedProcedureNames.add(storedProcedureMethod.getQualifiedClassName());</span>
+                }
+<span class="fc" id="L45">            }</span>
+<span class="fc" id="L46">        }</span>
+<span class="fc" id="L47">    }</span>
+
+    /**
+     * Example:
+     * &lt;p&gt;
+     * &lt;pre&gt;
+     * public class * extends StoredProcedure {
+     *
+     *     public *(DataSource dataSource) {
+     *         super(dataSource, &quot;*&quot;);
+     *         [ declareParameter(new SqlParameter(&quot;*&quot;, Types.*)); ]*
+     *         [ declareParameter(new SqlReturnResultSet(&quot;#result-set-*&quot;, new *Mapper())); ]*
+     *         compile();
+     *     }
+     *
+     *     public Map&amp;lt;String, Object&amp;gt; execute([ * * ]*) {
+     *         return super.execute([ * ]*);
+     *     }
+     *
+     * }
+     * &lt;/pre&gt;
+     */
+    private void generateStoredProcedure(StoredProcedureMethod storedProcedureMethod) throws JClassAlreadyExistsException, IOException {
+<span class="fc" id="L70">        JCodeModel model = new JCodeModel();</span>
+<span class="fc" id="L71">        JDefinedClass spClass = createClass(model, storedProcedureMethod.getPackage(), storedProcedureMethod.getSimpleClassName());</span>
+<span class="fc" id="L72">        createConstructor(model, spClass, storedProcedureMethod);</span>
+<span class="fc" id="L73">        addExecuteMethod(model, spClass, storedProcedureMethod);</span>
+
+<span class="fc" id="L75">        generateClass(model, storedProcedureMethod.getQualifiedClassName());</span>
+<span class="fc" id="L76">    }</span>
+
+    /**
+     * Generates:
+     * &lt;pre&gt;
+     * public class * extends StoredProcedure {className}
+     * &lt;/pre&gt;
+     */
+    private JDefinedClass createClass(JCodeModel model, String spPackage, String className) throws JClassAlreadyExistsException {
+<span class="fc" id="L85">        JPackage jPackage = model._package(spPackage);</span>
+<span class="fc" id="L86">        JDefinedClass aClass = jPackage._class(className);</span>
+<span class="fc" id="L87">        CodeModelUtil.annotateGenerated(aClass);</span>
+<span class="fc" id="L88">        aClass._extends(model.directClass(SPRING_STORED_PROCEDURE));</span>
+<span class="fc" id="L89">        return aClass;</span>
+    }
+
+    /**
+     * Generates:
+     * &lt;pre&gt;
+     * public {SP_CLASS_NAME}(DataSource dataSource) {
+     *      super(dataSource, {SP_NAME});
+     *      [ declareParameter(new SqlParameter({PARAMETER_NAME}, Types.*)); ]*
+     *      [ declareParameter(new SqlReturnResultSet(&quot;#result-set-*&quot;, new *Mapper())); ]*
+     *      compile();
+     * }
+     * &lt;/pre&gt;
+     */
+    private void createConstructor(JCodeModel model, JDefinedClass spClass, StoredProcedureMethod storedProcedureMethod) {
+<span class="fc" id="L104">        JMethod constructor = spClass.constructor(JMod.PUBLIC);</span>
+<span class="fc" id="L105">        JVar dataSource = constructor.param(DataSource.class, &quot;dataSource&quot;);</span>
+<span class="fc" id="L106">        JBlock body = constructor.body();</span>
+<span class="fc" id="L107">        body.add(JExpr.invoke(&quot;super&quot;).arg(dataSource).arg(storedProcedureMethod.getStoredProcedureName()));</span>
+<span class="fc" id="L108">        declareSqlParameters(model, storedProcedureMethod, body);</span>
+<span class="fc" id="L109">        declareResultSets(model, body, storedProcedureMethod);</span>
+<span class="fc" id="L110">        body.add(JExpr.invoke(&quot;compile&quot;));</span>
+<span class="fc" id="L111">    }</span>
+
+    /**
+     * Generates:
+     * &lt;pre&gt;
+     * [ declareParameter(new SqlParameter({PARAMETER_NAME}, Types.*)); ]*
+     * &lt;/pre&gt;
+     */
+    private void declareSqlParameters(JCodeModel model, StoredProcedureMethod storedProcedureMethod, JBlock body) {
+<span class="fc bfc" id="L120" title="All 2 branches covered.">        for (Variable variable : storedProcedureMethod.getArguments()) {</span>
+<span class="fc" id="L121">            String sqlType = StringUtil.getSqlParameter(variable.getTypeInfo().getGenericTypeOrType());</span>
+<span class="fc" id="L122">            JInvocation sqlParameter = JExpr._new(model.directClass(SPRING_SQL_PARAMETER));</span>
+<span class="fc" id="L123">            sqlParameter.arg(variable.getName());</span>
+<span class="fc" id="L124">            sqlParameter.arg(model.directClass(Types.class.getCanonicalName()).staticRef(sqlType));</span>
+<span class="fc" id="L125">            body.add(JExpr.invoke(&quot;declareParameter&quot;).arg(sqlParameter));</span>
+<span class="fc" id="L126">        }</span>
+<span class="fc" id="L127">    }</span>
+
+    /**
+     * Generates:
+     * &lt;pre&gt;
+     * [ declareParameter(new SqlReturnResultSet(&quot;#result-set-*&quot;, new *Mapper())); ]*
+     * &lt;/pre&gt;
+     */
+    private void declareResultSets(JCodeModel model, JBlock body, StoredProcedureMethod storedProcedureMethod) {
+<span class="fc" id="L136">        String type = storedProcedureMethod.getReturnTypeInfo().getGenericType().orElse(storedProcedureMethod.getReturnTypeInfo().getType());</span>
+
+<span class="pc bpc" id="L138" title="1 of 2 branches missed.">        if (!&quot;void&quot;.equals(type)) {</span>
+<span class="fc bfc" id="L139" title="All 2 branches covered.">            if (resultSetsMap.containsKey(type)) {</span>
+<span class="fc" id="L140">                multipleResultSets(model, body, type);</span>
+            } else {
+<span class="fc" id="L142">                singleResultSet(model, body, storedProcedureMethod);</span>
+            }
+        }
+<span class="fc" id="L145">    }</span>
+
+    /**
+     * If the type is a {@link at.rseiler.spbee.core.annotation.ResultSet} than multiple result-sets are declared.
+     * &lt;p&gt;
+     * Generates:
+     * &lt;pre&gt;
+     * [ declareParameter(new SqlReturnResultSet(&quot;#result-set-*&quot;, new *Mapper())); ]*
+     * &lt;/pre&gt;
+     */
+    private void multipleResultSets(JCodeModel model, JBlock body, String type) {
+<span class="fc" id="L156">        List&lt;ResultSetVariable&gt; variables = resultSetsMap.get(type).getResultSetVariables();</span>
+
+<span class="fc bfc" id="L158" title="All 2 branches covered.">        for (int i = 0; i &lt; variables.size(); i++) {</span>
+<span class="fc" id="L159">            ResultSetVariable variable = variables.get(i);</span>
+<span class="fc" id="L160">            JInvocation newMapper = JExpr._new(model.directClass(variable.getRowMapper()));</span>
+<span class="fc" id="L161">            JInvocation sqlReturnResultSet = JExpr._new(model.directClass(SPRING_SQL_RETURN_RESULT_SET)).arg(&quot;#result-set-&quot; + i).arg(newMapper);</span>
+<span class="fc" id="L162">            body.add(JExpr.invoke(&quot;declareParameter&quot;).arg(sqlReturnResultSet));</span>
+        }
+<span class="fc" id="L164">    }</span>
+
+    /**
+     * If it's a basic type than only one result-set is declared.
+     * &lt;p&gt;
+     * Generates:
+     * &lt;pre&gt;
+     * declareParameter(new SqlReturnResultSet(&quot;#result-set-0&quot;, new *Mapper()));
+     * &lt;/pre&gt;
+     */
+    private void singleResultSet(JCodeModel model, JBlock body, StoredProcedureMethod storedProcedureMethod) {
+<span class="fc" id="L175">        JInvocation newMapper = JExpr._new(model.directClass(storedProcedureMethod.getQualifiedRowMapperClass()));</span>
+<span class="fc" id="L176">        JInvocation sqlReturnResultSet = JExpr._new(model.directClass(SPRING_SQL_RETURN_RESULT_SET)).arg(&quot;#result-set-0&quot;).arg(newMapper);</span>
+<span class="fc" id="L177">        body.add(JExpr.invoke(&quot;declareParameter&quot;).arg(sqlReturnResultSet));</span>
+<span class="fc" id="L178">    }</span>
+
+    /**
+     * Generates:
+     * &lt;p&gt;
+     * &lt;pre&gt;
+     * public Map&lt;String, Object&gt; execute( [ * ]* ) { return super.execute( [ * ]* ) }
+     * &lt;/pre&gt;
+     */
+    private void addExecuteMethod(JCodeModel model, JDefinedClass aClass, StoredProcedureMethod storedProcedureMethod) {
+<span class="fc" id="L188">        JMethod method = aClass.method(JMod.PUBLIC, CodeModelUtil.getMapStringObject(model), &quot;execute&quot;);</span>
+<span class="fc" id="L189">        JInvocation superExecute = JExpr._super().invoke(&quot;execute&quot;);</span>
+
+<span class="fc bfc" id="L191" title="All 2 branches covered.">        for (Variable variable : storedProcedureMethod.getArguments()) {</span>
+<span class="fc" id="L192">            superExecute.arg(method.param(model.directClass(variable.getTypeInfo().asString()), variable.getName()));</span>
+<span class="fc" id="L193">        }</span>
+
+<span class="fc" id="L195">        method.body()._return(superExecute);</span>
+<span class="fc" id="L196">    }</span>
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.2.201409121644</span></div></body></html>

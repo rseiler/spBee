@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>AnnotationInfo.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">at.rseiler.spbee.core.pojo</a> &gt; <span class="el_source">AnnotationInfo.java</span></div><h1>AnnotationInfo.java</h1><pre class="source lang-java linenums">package at.rseiler.spbee.core.pojo;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Holds the information of an annotation.
+ * &lt;p&gt;
+ * Be aware that it's now a complete model of an annotation. In the {@link AnnotationValueInfo} class the field
+ * value of the type Object, which can hold other javax.lang.model.element.* classes.
+ * See: {@link at.rseiler.spbee.core.generator.DtoGenerator.DtoClassGeneratorInstance#addAnnotationParam}
+ * and {@link at.rseiler.spbee.core.generator.DtoGenerator.DtoClassGeneratorInstance#addAnnotationArrayMemberParam}
+ *
+ * @author Reinhard Seiler {@literal &lt;reinhard.seiler@gmail.com&gt;}
+ */
+public class AnnotationInfo {
+
+    private final String annotationType;
+<span class="fc" id="L19">    private final List&lt;AnnotationValueInfo&gt; annotationValueInfos = new ArrayList&lt;&gt;();</span>
+
+    /**
+     * Constructs a new AnnotationInfo.
+     *
+     * @param annotationType the type of the annotation
+     */
+<span class="fc" id="L26">    public AnnotationInfo(String annotationType) {</span>
+<span class="fc" id="L27">        this.annotationType = annotationType;</span>
+<span class="fc" id="L28">    }</span>
+
+    /**
+     * Adds a parameter to the annotation.
+     *
+     * @param annotationValueInfo the parameter
+     * @return itself
+     */
+    public AnnotationInfo addAnnotationValueInfo(AnnotationValueInfo annotationValueInfo) {
+<span class="fc" id="L37">        annotationValueInfos.add(annotationValueInfo);</span>
+<span class="fc" id="L38">        return this;</span>
+    }
+
+    /**
+     * Returns the type of the annotation.
+     *
+     * @return the type
+     */
+    public String getAnnotationType() {
+<span class="fc" id="L47">        return annotationType;</span>
+    }
+
+    /**
+     * Returns the parameters of the annotation.
+     *
+     * @return the parameters
+     */
+    public List&lt;AnnotationValueInfo&gt; getAnnotationValueInfos() {
+<span class="fc" id="L56">        return annotationValueInfos;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.2.201409121644</span></div></body></html>

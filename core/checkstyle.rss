@@ -1,0 +1,530 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+Licensed to the Apache Software Foundation (ASF) under one
+or more contributor license agreements.  See the NOTICE file
+distributed with this work for additional information
+regarding copyright ownership.  The ASF licenses this file
+to you under the Apache License, Version 2.0 (the
+"License"); you may not use this file except in compliance
+with the License.  You may obtain a copy of the License at
+
+  http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing,
+software distributed under the License is distributed on an
+"AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, either express or implied.  See the License for the
+specific language governing permissions and limitations
+under the License.
+-->
+<rss version="0.91">
+  <channel>
+    <title>core - Checkstyle report</title>
+    <link>https://github.com/rseiler/pom-project.git/pom/spbee/core</link>
+    <description>core - Checkstyle report</description>
+    <language>en-us</language>
+    <copyright>&#169;2015</copyright>
+    <item>
+      <title>File: 34,
+             Errors: 1,
+             Warnings: 0,
+             Infos: 0
+      </title>
+            <link>https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html</link>
+      <description>
+        <p>Click <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html">here</a> for the full Checkstyle report.</p>
+
+        <table summary="Files" boder="1">
+          <thead>
+            <tr>
+              <th>Files</th>
+              <th style="width:30px;"><abbr title="Info">I</abbr></th>
+              <th style="width:30px;"><abbr title="Warning">W</abbr></th>
+              <th style="width:30px;"><abbr title="Error">E</abbr></th>
+            </tr>
+          </thead>
+          <tbody>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.pojo.ResultSetClass.java">at/rseiler/spbee/core/pojo/ResultSetClass.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.util.StringCodeWriter.java">at/rseiler/spbee/core/util/StringCodeWriter.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.exception.MultipleObjectsReturned.java">at/rseiler/spbee/core/exception/MultipleObjectsReturned.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.collector.DtoCollector.java">at/rseiler/spbee/core/collector/DtoCollector.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.pojo.annotation.StoredProcedureData.java">at/rseiler/spbee/core/pojo/annotation/StoredProcedureData.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.collector.EntityClassCollector.java">at/rseiler/spbee/core/collector/EntityClassCollector.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.generator.DtoGenerator.java">at/rseiler/spbee/core/generator/DtoGenerator.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.pojo.AnnotationValueInfo.java">at/rseiler/spbee/core/pojo/AnnotationValueInfo.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.pojo.annotation.RowMapperData.java">at/rseiler/spbee/core/pojo/annotation/RowMapperData.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.generator.MapperGenerator.java">at/rseiler/spbee/core/generator/MapperGenerator.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.util.ElementConverter.java">at/rseiler/spbee/core/util/ElementConverter.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.annotation.ReturnNull.java">at/rseiler/spbee/core/annotation/ReturnNull.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.annotation.ResultSet.java">at/rseiler/spbee/core/annotation/ResultSet.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.pojo.AnnotationProcessingContext.java">at/rseiler/spbee/core/pojo/AnnotationProcessingContext.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.pojo.DtoClass.java">at/rseiler/spbee/core/pojo/DtoClass.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.annotation.Dao.java">at/rseiler/spbee/core/annotation/Dao.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.pojo.AnnotationInfo.java">at/rseiler/spbee/core/pojo/AnnotationInfo.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.pojo.annotation.MappingConstructorData.java">at/rseiler/spbee/core/pojo/annotation/MappingConstructorData.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.generator.AbstractGenerator.java">at/rseiler/spbee/core/generator/AbstractGenerator.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.pojo.TypeInfo.java">at/rseiler/spbee/core/pojo/TypeInfo.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.collector.ResultSetCollector.java">at/rseiler/spbee/core/collector/ResultSetCollector.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.annotation.RowMapper.java">at/rseiler/spbee/core/annotation/RowMapper.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.annotation.Entity.java">at/rseiler/spbee/core/annotation/Entity.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.annotation.StoredProcedure.java">at/rseiler/spbee/core/annotation/StoredProcedure.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.SPBeeAnnotationProcessor.java">at/rseiler/spbee/core/SPBeeAnnotationProcessor.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.pojo.ResultSetVariable.java">at/rseiler/spbee/core/pojo/ResultSetVariable.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.annotation.MappingConstructor.java">at/rseiler/spbee/core/annotation/MappingConstructor.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.exception.ObjectDoesNotExist.java">at/rseiler/spbee/core/exception/ObjectDoesNotExist.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.pojo.StoredProcedureMethod.java">at/rseiler/spbee/core/pojo/StoredProcedureMethod.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.util.StringUtil.java">at/rseiler/spbee/core/util/StringUtil.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.pojo.Variable.java">at/rseiler/spbee/core/pojo/Variable.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.util.CodeModelUtil.java">at/rseiler/spbee/core/util/CodeModelUtil.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.pojo.MapperClass.java">at/rseiler/spbee/core/pojo/MapperClass.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+              </tr>
+                          <tr>
+                <td>
+                  <a href="https://github.com/rseiler/pom-project.git/pom/spbee/core/checkstyle.html#at.rseiler.spbee.core.generator.StoredProcedureGenerator.java">at/rseiler/spbee/core/generator/StoredProcedureGenerator.java</a>
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  0
+                </td>
+                <td>
+                  1
+                </td>
+              </tr>
+                      </tbody>
+        </table>
+        
+      </description>
+    </item>
+  </channel>
+</rss>
+

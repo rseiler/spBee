@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DtoClass.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">at.rseiler.spbee.core.pojo</a> &gt; <span class="el_source">DtoClass.java</span></div><h1>DtoClass.java</h1><pre class="source lang-java linenums">package at.rseiler.spbee.core.pojo;
+
+import at.rseiler.spbee.core.util.StringUtil;
+
+import java.util.LinkedList;
+import java.util.List;
+
+/**
+ * Holds the information to generate the DTO class.
+ *
+ * @author Reinhard Seiler {@literal &lt;reinhard.seiler@gmail.com&gt;}
+ */
+public class DtoClass {
+
+    private final String superQualifiedClassName;
+    private final boolean anInterface;
+<span class="fc" id="L17">    private final List&lt;StoredProcedureMethod&gt; storedProcedureMethods = new LinkedList&lt;&gt;();</span>
+
+    /**
+     * Constructs a new DtoClass.
+     *
+     * @param superQualifiedClassName the qualified class name of the interface or the abstract class.
+     * @param anInterface             specifies if it's am interface. Otherwise it's handled as an abstract class.
+     */
+<span class="fc" id="L25">    public DtoClass(String superQualifiedClassName, boolean anInterface) {</span>
+<span class="fc" id="L26">        this.superQualifiedClassName = superQualifiedClassName;</span>
+<span class="fc" id="L27">        this.anInterface = anInterface;</span>
+<span class="fc" id="L28">    }</span>
+
+    /**
+     * Adds stored procedure method to the DTO class.
+     *
+     * @param method the method which should be added
+     */
+    public void add(StoredProcedureMethod method) {
+<span class="fc" id="L36">        storedProcedureMethods.add(method);</span>
+<span class="fc" id="L37">    }</span>
+
+    /**
+     * Returns the qualified class name of the interface or the abstract class of which this DTO class is derived.
+     *
+     * @return the qualified class name
+     */
+    public String getSuperQualifiedClassName() {
+<span class="fc" id="L45">        return superQualifiedClassName;</span>
+    }
+
+    /**
+     * Returns the qualified class name of the DTO class.
+     *
+     * @return the qualified class name
+     */
+    public String getQualifiedClassName() {
+<span class="fc" id="L54">        return StringUtil.getQualifiedDtoClassName(superQualifiedClassName);</span>
+    }
+
+    /**
+     * Returns the package of the DTO class.
+     *
+     * @return the package
+     */
+    public String getPackage() {
+<span class="fc" id="L63">        return StringUtil.getPackage(getQualifiedClassName());</span>
+    }
+
+    /**
+     * Returns the simple class name of the DTO class.
+     *
+     * @return the simple class name
+     */
+    public String getSimpleClassName() {
+<span class="fc" id="L72">        return StringUtil.getSimpleClassName(getQualifiedClassName());</span>
+    }
+
+    /**
+     * Returns if the DTO class is derived from an interface or an abstract class.
+     *
+     * @return true if the DTO class is derived from an interface
+     */
+    public boolean isAnInterface() {
+<span class="fc" id="L81">        return anInterface;</span>
+    }
+
+    /**
+     * Returns all stored procedure methods from the DTO class.
+     *
+     * @return the stored procedure method.
+     */
+    public List&lt;StoredProcedureMethod&gt; getStoredProcedureMethods() {
+<span class="fc" id="L90">        return storedProcedureMethods;</span>
+    }
+
+    @Override
+    public String toString() {
+<span class="nc" id="L95">        return &quot;DtoClass{&quot; +</span>
+                &quot;superQualifiedClassName='&quot; + superQualifiedClassName + '\'' +
+                &quot;, anInterface=&quot; + anInterface +
+                &quot;, storedProcedureMethods=&quot; + storedProcedureMethods +
+                '}';
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.2.201409121644</span></div></body></html>

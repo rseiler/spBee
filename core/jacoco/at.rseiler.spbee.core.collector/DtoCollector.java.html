@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DtoCollector.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">at.rseiler.spbee.core.collector</a> &gt; <span class="el_source">DtoCollector.java</span></div><h1>DtoCollector.java</h1><pre class="source lang-java linenums">package at.rseiler.spbee.core.collector;
+
+import at.rseiler.spbee.core.SPBeeAnnotationProcessor;
+import at.rseiler.spbee.core.annotation.MappingConstructor;
+import at.rseiler.spbee.core.annotation.ReturnNull;
+import at.rseiler.spbee.core.annotation.RowMapper;
+import at.rseiler.spbee.core.annotation.StoredProcedure;
+import at.rseiler.spbee.core.pojo.DtoClass;
+import at.rseiler.spbee.core.pojo.StoredProcedureMethod;
+import at.rseiler.spbee.core.pojo.StoredProcedureMethod.Builder;
+import at.rseiler.spbee.core.pojo.Variable;
+import at.rseiler.spbee.core.util.StringUtil;
+import com.sun.codemodel.JClassAlreadyExistsException;
+
+import javax.lang.model.element.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
+
+/**
+ * Collects all DTO classes with all methods which are annotated with {@link at.rseiler.spbee.core.annotation.StoredProcedure}.
+ * &lt;p&gt;
+ * &lt;ul&gt;
+ * &lt;li&gt;gets all methods annotated with @StoredProcedure
+ * &lt;ul&gt;
+ * &lt;li&gt;extracts the method name&lt;/li&gt;
+ * &lt;li&gt;extracts the return type&lt;/li&gt;
+ * &lt;li&gt;collects all parameters&lt;/li&gt;
+ * &lt;li&gt;collects all non spBee annotations&lt;/li&gt;
+ * &lt;li&gt;reads the @StoredProcedure annotation&lt;/li&gt;
+ * &lt;li&gt;reads the @ReturnNull annotation&lt;/li&gt;
+ * &lt;li&gt;reads the @MappingConstructor annotation&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;/li&gt;
+ * &lt;li&gt;with this data a DtoClass object is created&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * @author Reinhard Seiler {@literal &lt;reinhard.seiler@gmail.com&gt;}
+ */
+public class DtoCollector {
+
+    private final Set&lt;? extends Element&gt; elements;
+<span class="nc" id="L47">    private List&lt;DtoClass&gt; dtoClasses = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L49">    public DtoCollector(Set&lt;? extends Element&gt; elements) {</span>
+<span class="nc" id="L50">        this.elements = elements;</span>
+<span class="nc" id="L51">    }</span>
+
+    /**
+     * The DTO classes.
+     *
+     * @return the list of DTO classes
+     */
+    public List&lt;DtoClass&gt; getDtoClasses() {
+<span class="nc" id="L59">        return dtoClasses;</span>
+    }
+
+    /**
+     * Collects all DTO classes with all methods which are annotated with {@link at.rseiler.spbee.core.annotation.StoredProcedure}.
+     *
+     * @return itself
+     * @throws JClassAlreadyExistsException
+     * @throws IOException
+     */
+    public DtoCollector collect() throws JClassAlreadyExistsException, IOException {
+<span class="nc bnc" id="L70" title="All 2 branches missed.">        for (Element element : elements) {</span>
+<span class="nc" id="L71">            DtoClass dtoClass = new DtoClass(element.toString(), element.getKind().isInterface());</span>
+<span class="nc" id="L72">            dtoClasses.add(dtoClass);</span>
+
+<span class="nc" id="L74">            element.getEnclosedElements().stream()</span>
+<span class="nc" id="L75">                    .filter(isStoredProcedureMethod())</span>
+<span class="nc" id="L76">                    .forEach(collectDtoMethod(dtoClass));</span>
+<span class="nc" id="L77">        }</span>
+
+<span class="nc" id="L79">        return this;</span>
+    }
+
+    /**
+     * Checks if the element is a method and it's annotated with {@link at.rseiler.spbee.core.annotation.StoredProcedure}.
+     *
+     * @return the predicate
+     */
+    private Predicate&lt;Element&gt; isStoredProcedureMethod() {
+<span class="nc bnc" id="L88" title="All 4 branches missed.">        return element -&gt; element.getKind() == ElementKind.METHOD &amp;&amp; element.getAnnotation(StoredProcedure.class) != null;</span>
+    }
+
+    /**
+     * Checks if the method is annotated with {@link at.rseiler.spbee.core.annotation.StoredProcedure}.
+     * If it is than the method is added tot he DtoClass.
+     *
+     * @param dtoClass the DTO class to which the method belongs
+     */
+    private Consumer&lt;Element&gt; collectDtoMethod(DtoClass dtoClass) {
+<span class="nc" id="L98">        return element -&gt; {</span>
+<span class="nc" id="L99">            ExecutableElement executableElement = (ExecutableElement) element;</span>
+<span class="nc" id="L100">            StoredProcedureMethod storedProcedureMethod = new Builder()</span>
+<span class="nc" id="L101">                    .dtoClassName(dtoClass.getQualifiedClassName())</span>
+<span class="nc" id="L102">                    .methodName(executableElement.getSimpleName().toString())</span>
+<span class="nc" id="L103">                    .returnTypeInfo(StringUtil.getTypeInfo(executableElement.getReturnType().toString()))</span>
+<span class="nc" id="L104">                    .annotations(getAnnotations(executableElement))</span>
+<span class="nc" id="L105">                    .storedProcedure(executableElement.getAnnotation(StoredProcedure.class))</span>
+<span class="nc" id="L106">                    .rowMapper(executableElement.getAnnotation(RowMapper.class))</span>
+<span class="nc" id="L107">                    .returnNull(executableElement.getAnnotation(ReturnNull.class))</span>
+<span class="nc" id="L108">                    .mappingConstructor(executableElement.getAnnotation(MappingConstructor.class))</span>
+<span class="nc" id="L109">                    .build();</span>
+
+<span class="nc bnc" id="L111" title="All 2 branches missed.">            for (VariableElement parameter : executableElement.getParameters()) {</span>
+<span class="nc" id="L112">                storedProcedureMethod.addArgument(getVariable(parameter));</span>
+<span class="nc" id="L113">            }</span>
+
+<span class="nc" id="L115">            dtoClass.add(storedProcedureMethod);</span>
+<span class="nc" id="L116">        };</span>
+    }
+
+    /**
+     * Gets all non spBee related annotations.
+     *
+     * @param executableElement the element
+     * @return the list of annotations
+     */
+    private List&lt;AnnotationMirror&gt; getAnnotations(ExecutableElement executableElement) {
+<span class="nc" id="L126">        return executableElement.getAnnotationMirrors().stream()</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">                .filter(annotationMirror -&gt; !annotationMirror.getAnnotationType().toString().startsWith(SPBeeAnnotationProcessor.SPBEE_ANNOTATION_PREFIX))</span>
+<span class="nc" id="L128">                .collect(Collectors.toList());</span>
+    }
+
+    /**
+     * Gets the variable.
+     *
+     * @param variableElement the element
+     * @return the variable
+     */
+    private Variable getVariable(VariableElement variableElement) {
+<span class="nc" id="L138">        return new Variable(variableElement.getSimpleName().toString(), variableElement.asType().toString());</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.2.201409121644</span></div></body></html>

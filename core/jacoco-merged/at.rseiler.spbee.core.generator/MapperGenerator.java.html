@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>MapperGenerator.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">at.rseiler.spbee.core.generator</a> &gt; <span class="el_source">MapperGenerator.java</span></div><h1>MapperGenerator.java</h1><pre class="source lang-java linenums">package at.rseiler.spbee.core.generator;
+
+import at.rseiler.spbee.core.pojo.MapperClass;
+import at.rseiler.spbee.core.pojo.Variable;
+import at.rseiler.spbee.core.util.CodeModelUtil;
+import at.rseiler.spbee.core.util.StringUtil;
+import com.sun.codemodel.*;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import java.io.IOException;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Collection;
+import java.util.List;
+
+/**
+ * Generator for the RowMapper classes.
+ *
+ * @author Reinhard Seiler {@literal &lt;reinhard.seiler@gmail.com&gt;}
+ */
+public class MapperGenerator extends AbstractGenerator {
+
+    private static final String SPRING_ROW_MAPPER = &quot;org.springframework.jdbc.core.RowMapper&quot;;
+
+    public MapperGenerator(ProcessingEnvironment processingEnv) {
+<span class="fc" id="L26">        super(processingEnv);</span>
+<span class="fc" id="L27">    }</span>
+
+    public void generateMappers(Collection&lt;MapperClass&gt; mapperClasses) throws JClassAlreadyExistsException, ClassNotFoundException, IOException {
+<span class="fc bfc" id="L30" title="All 2 branches covered.">        for (MapperClass mapperClass : mapperClasses) {</span>
+<span class="fc" id="L31">            generateMapper(mapperClass);</span>
+<span class="fc" id="L32">        }</span>
+<span class="fc" id="L33">    }</span>
+
+    /**
+     * Generates a MapperClass.
+     * &lt;p&gt;
+     * Example:
+     * &lt;pre&gt;
+     * public class *Mapper implements RowMapper&lt;*&gt; {
+     *
+     *      public T mapRow(ResultSet rs, int rowNum) throws SQLException {
+     *          return new T( [rs.*(1)]+ );
+     *      }
+     *
+     * }
+     * &lt;/pre&gt;
+     *
+     * @param mapperClass the mapper class
+     * @throws JClassAlreadyExistsException
+     * @throws ClassNotFoundException
+     * @throws IOException
+     */
+    private void generateMapper(MapperClass mapperClass) throws JClassAlreadyExistsException, ClassNotFoundException, IOException {
+<span class="fc" id="L55">        String type = mapperClass.getType();</span>
+<span class="fc" id="L56">        String qualifiedClassName = mapperClass.getQualifiedMapperClassName();</span>
+
+<span class="fc" id="L58">        JCodeModel model = new JCodeModel();</span>
+<span class="fc" id="L59">        JClass typeJClass = model.directClass(type);</span>
+<span class="fc" id="L60">        JDefinedClass mapperJDefinedClass = createClass(model, qualifiedClassName, typeJClass);</span>
+<span class="fc" id="L61">        createMapRow(model, mapperJDefinedClass, typeJClass, mapperClass.getVariables());</span>
+
+<span class="fc" id="L63">        generateClass(model, qualifiedClassName);</span>
+<span class="fc" id="L64">    }</span>
+
+    /**
+     * Generates:
+     * &lt;pre&gt;
+     * class *Mapper implements RowMapper&lt;*&gt; [className, typeJClass]
+     * &lt;/pre&gt;
+     */
+    private JDefinedClass createClass(JCodeModel model, String qualifiedClassName, JClass typeJClass) throws JClassAlreadyExistsException {
+<span class="fc" id="L73">        String className = StringUtil.getSimpleClassName(qualifiedClassName);</span>
+<span class="fc" id="L74">        String aPackage = StringUtil.getPackage(qualifiedClassName);</span>
+
+<span class="fc" id="L76">        JPackage jPackage = model._package(aPackage);</span>
+<span class="fc" id="L77">        JDefinedClass aClass = jPackage._class(className);</span>
+<span class="fc" id="L78">        CodeModelUtil.annotateGenerated(aClass);</span>
+<span class="fc" id="L79">        aClass._implements(model.directClass(SPRING_ROW_MAPPER).narrow(typeJClass));</span>
+
+<span class="fc" id="L81">        return aClass;</span>
+    }
+
+    /**
+     * Generates:
+     * &lt;pre&gt;
+     * public * mapRow(ResultSet rs, int rowNum) throws SQLException {
+     *     return new * ( [ rs.get*(*) ]* );
+     * }
+     * &lt;/pre&gt;
+     */
+    private void createMapRow(JCodeModel model, JDefinedClass mapperClass, JClass type, List&lt;Variable&gt; mapperVariables) throws ClassNotFoundException {
+<span class="fc" id="L93">        JMethod method = mapperClass.method(JMod.PUBLIC, type, &quot;mapRow&quot;);</span>
+<span class="fc" id="L94">        method._throws(SQLException.class);</span>
+<span class="fc" id="L95">        method.param(model.directClass(ResultSet.class.getCanonicalName()), &quot;rs&quot;);</span>
+<span class="fc" id="L96">        method.param(model.parseType(&quot;int&quot;), &quot;rowNum&quot;);</span>
+<span class="fc" id="L97">        JInvocation invocation = JExpr._new(type);</span>
+
+<span class="fc bfc" id="L99" title="All 2 branches covered.">        for (int i = 0; i &lt; mapperVariables.size(); i++) {</span>
+<span class="fc" id="L100">            Variable variable = mapperVariables.get(i);</span>
+<span class="fc" id="L101">            String methodName = getResultSetMethod(variable.getTypeInfo().getGenericTypeOrType());</span>
+<span class="fc" id="L102">            invocation.arg(JExpr.invoke(JExpr.ref(&quot;rs&quot;), methodName).arg(JExpr.lit(i + 1)));</span>
+        }
+
+<span class="fc" id="L105">        method.body()._return(invocation);</span>
+<span class="fc" id="L106">    }</span>
+
+    /**
+     * Retrieves the most fitting {@link java.sql.ResultSet} method based on the type.
+     *
+     * @param type the type
+     * @return the method name
+     */
+    private static String getResultSetMethod(String type) {
+<span class="pc bpc" id="L115" title="64 of 73 branches missed.">        switch (type) {</span>
+            case &quot;boolean&quot;:
+            case &quot;java.lang.Boolean&quot;:
+<span class="fc" id="L118">                return &quot;getBoolean&quot;;</span>
+            case &quot;byte&quot;:
+            case &quot;java.lang.Byte&quot;:
+<span class="nc" id="L121">                return &quot;getByte&quot;;</span>
+            case &quot;short&quot;:
+            case &quot;java.lang.Short&quot;:
+<span class="nc" id="L124">                return &quot;getShort&quot;;</span>
+            case &quot;int&quot;:
+            case &quot;java.lang.Integer&quot;:
+<span class="fc" id="L127">                return &quot;getInt&quot;;</span>
+            case &quot;long&quot;:
+            case &quot;java.lang.Long&quot;:
+<span class="nc" id="L130">                return &quot;getLong&quot;;</span>
+            case &quot;float&quot;:
+            case &quot;java.lang.Float&quot;:
+<span class="nc" id="L133">                return &quot;getFloat&quot;;</span>
+            case &quot;double&quot;:
+            case &quot;java.lang.Double&quot;:
+<span class="nc" id="L136">                return &quot;getDouble&quot;;</span>
+            case &quot;byte[]&quot;:
+            case &quot;java.lang.Byte[]&quot;:
+<span class="nc" id="L139">                return &quot;getByte&quot;;</span>
+            case &quot;java.lang.String&quot;:
+<span class="fc" id="L141">                return &quot;getString&quot;;</span>
+            case &quot;java.sql.Date&quot;:
+            case &quot;java.util.Date&quot;:
+<span class="nc" id="L144">                return &quot;getDate&quot;;</span>
+            case &quot;java.math.BigDecimal&quot;:
+<span class="nc" id="L146">                return &quot;getBigDecimal&quot;;</span>
+            default:
+<span class="nc" id="L148">                return &quot;getObject&quot;;</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.2.201409121644</span></div></body></html>

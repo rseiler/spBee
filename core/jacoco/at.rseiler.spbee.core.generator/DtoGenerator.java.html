@@ -1,0 +1,516 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../.resources/report.css" type="text/css"/><link rel="shortcut icon" href="../.resources/report.gif" type="image/gif"/><title>DtoGenerator.java</title><link rel="stylesheet" href="../.resources/prettify.css" type="text/css"/><script type="text/javascript" src="../.resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../.sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">core</a> &gt; <a href="index.source.html" class="el_package">at.rseiler.spbee.core.generator</a> &gt; <span class="el_source">DtoGenerator.java</span></div><h1>DtoGenerator.java</h1><pre class="source lang-java linenums">package at.rseiler.spbee.core.generator;
+
+import at.rseiler.spbee.core.exception.MultipleObjectsReturned;
+import at.rseiler.spbee.core.exception.ObjectDoesNotExist;
+import at.rseiler.spbee.core.pojo.*;
+import at.rseiler.spbee.core.util.CodeModelUtil;
+import at.rseiler.spbee.core.util.StringUtil;
+import com.sun.codemodel.*;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
+import javax.lang.model.type.DeclaredType;
+import javax.sql.DataSource;
+import java.io.IOException;
+import java.util.*;
+
+/**
+ * Generator for the DTO classes.
+ *
+ * @author Reinhard Seiler {@literal &lt;reinhard.seiler@gmail.com&gt;}
+ */
+public class DtoGenerator extends AbstractGenerator {
+
+    private static final String SPRING_ANNOTATION_AUTOWIRED = &quot;org.springframework.beans.factory.annotation.Autowired&quot;;
+    private static final String SPRING_ANNOTATION_SERVICE = &quot;org.springframework.stereotype.Service&quot;;
+
+    public DtoGenerator(ProcessingEnvironment processingEnv) {
+<span class="fc" id="L29">        super(processingEnv);</span>
+<span class="fc" id="L30">    }</span>
+
+    /**
+     * Generates the DTO classes.
+     *
+     * @param dtoClasses    the DTO classes to generate
+     * @param resultSetMap the ResultSet map to generate the code correctly
+     * @throws JClassAlreadyExistsException
+     * @throws IOException
+     */
+    public void generateDtoClasses(List&lt;DtoClass&gt; dtoClasses, Map&lt;String, ResultSetClass&gt; resultSetMap) throws JClassAlreadyExistsException, IOException {
+<span class="fc bfc" id="L41" title="All 2 branches covered.">        for (DtoClass dtoClass : dtoClasses) {</span>
+<span class="fc" id="L42">            DtoClassGeneratorInstance dtoClassGeneratorInstance = new DtoClassGeneratorInstance(dtoClass, resultSetMap)</span>
+<span class="fc" id="L43">                    .createClass()</span>
+<span class="fc" id="L44">                    .createConstructor()</span>
+<span class="fc" id="L45">                    .addStoredProcedureMethods();</span>
+
+<span class="fc" id="L47">            generateClass(dtoClassGeneratorInstance.getModel(), dtoClass.getQualifiedClassName());</span>
+<span class="fc" id="L48">        }</span>
+<span class="fc" id="L49">    }</span>
+
+    /**
+     * Holds all information to generate one specific DTO class and generates the necessary code.
+     */
+    private static class DtoClassGeneratorInstance {
+
+        private final DtoClass dtoClass;
+        private final Map&lt;String, ResultSetClass&gt; resultSetMap;
+<span class="fc" id="L58">        private JCodeModel model = new JCodeModel();</span>
+        private JDefinedClass dtoJClass;
+        private JMethod constructor;
+        private JVar dataSource;
+<span class="fc" id="L62">        private Map&lt;String, JFieldVar&gt; spFields = new HashMap&lt;&gt;();</span>
+
+<span class="fc" id="L64">        public DtoClassGeneratorInstance(DtoClass dtoClass, Map&lt;String, ResultSetClass&gt; resultSetMap) {</span>
+<span class="fc" id="L65">            this.dtoClass = dtoClass;</span>
+<span class="fc" id="L66">            this.resultSetMap = resultSetMap;</span>
+<span class="fc" id="L67">        }</span>
+
+        public JCodeModel getModel() {
+<span class="fc" id="L70">            return model;</span>
+        }
+
+        /**
+         * Generates:
+         * &lt;pre&gt;
+         * {@literal @Service} public class *DaoImpl extends *Dao
+         * {@literal @Service} public class *DaoImpl implements *Dao
+         * &lt;/pre&gt;
+         */
+        private DtoClassGeneratorInstance createClass() throws JClassAlreadyExistsException {
+<span class="fc" id="L81">            JPackage dtoJPackage = model._package(dtoClass.getPackage());</span>
+<span class="fc" id="L82">            dtoJClass = dtoJPackage._class(dtoClass.getSimpleClassName());</span>
+<span class="fc" id="L83">            CodeModelUtil.annotateGenerated(dtoJClass);</span>
+<span class="fc" id="L84">            dtoJClass.annotate(model.directClass(SPRING_ANNOTATION_SERVICE));</span>
+<span class="fc" id="L85">            addSuperClassOrInterface();</span>
+<span class="fc" id="L86">            return this;</span>
+        }
+
+        /**
+         * Generates:
+         * &lt;pre&gt;
+         * {@literal @Autowired} public * (DataSource dataSource)
+         * &lt;/pre&gt;
+         */
+        public DtoClassGeneratorInstance createConstructor() {
+<span class="fc" id="L96">            constructor = dtoJClass.constructor(JMod.PUBLIC);</span>
+<span class="fc" id="L97">            constructor.annotate(model.directClass(SPRING_ANNOTATION_AUTOWIRED));</span>
+<span class="fc" id="L98">            dataSource = constructor.param(DataSource.class, &quot;dataSource&quot;);</span>
+<span class="fc" id="L99">            return this;</span>
+        }
+
+        /**
+         * Adds the stored procedure to the constructor (to get it autowired into the class) and creates the actual
+         * method to call the stored procedure.
+         */
+        public DtoClassGeneratorInstance addStoredProcedureMethods() throws JClassAlreadyExistsException {
+<span class="fc bfc" id="L107" title="All 2 branches covered.">            for (StoredProcedureMethod storedProcedureMethod : dtoClass.getStoredProcedureMethods()) {</span>
+<span class="fc" id="L108">                String fieldName = storedProcedureMethod.getDtoFieldName();</span>
+
+<span class="fc bfc" id="L110" title="All 2 branches covered.">                if (!spFields.containsKey(fieldName)) {</span>
+<span class="fc" id="L111">                    spFields.put(fieldName, addConstructorField(storedProcedureMethod));</span>
+                }
+
+<span class="fc" id="L114">                addDtoMethod(storedProcedureMethod, spFields.get(fieldName));</span>
+<span class="fc" id="L115">            }</span>
+<span class="fc" id="L116">            return this;</span>
+        }
+
+        /**
+         * Generates:
+         * &lt;pre&gt;
+         * implements *Dao
+         * extends *Dao
+         * &lt;/pre&gt;
+         */
+        private void addSuperClassOrInterface() {
+<span class="fc bfc" id="L127" title="All 2 branches covered.">            if (dtoClass.isAnInterface()) {</span>
+<span class="fc" id="L128">                dtoJClass._implements(model.directClass(dtoClass.getSuperQualifiedClassName()));</span>
+            } else {
+<span class="fc" id="L130">                dtoJClass._extends(model.directClass(dtoClass.getSuperQualifiedClassName()));</span>
+            }
+<span class="fc" id="L132">        }</span>
+
+        /**
+         * Generates:
+         * Field variable:
+         * &lt;pre&gt;
+         * [ private final {SP_NAME_CLASS} {SP_NAME_VARIABLE} ]+;
+         * &lt;pre&gt;
+         * Constructor assignment:
+         * &lt;pre&gt;
+         * [ {SP_NAME_VARIABLE} = new {SP_NAME_CLASS}(dataSource) ]+
+         * &lt;/pre&gt;
+         */
+        private JFieldVar addConstructorField(StoredProcedureMethod storedProcedureMethod) {
+<span class="pc bpc" id="L146" title="1 of 2 branches missed.">            if (constructor == null) {</span>
+<span class="nc" id="L147">                throw new RuntimeException(&quot;Invalid Usage. createConstructor() must be called first.&quot;);</span>
+            }
+
+<span class="fc" id="L150">            JClass jClass = model.directClass(storedProcedureMethod.getQualifiedClassName());</span>
+<span class="fc" id="L151">            JFieldVar field = dtoJClass.field(JMod.PRIVATE | JMod.FINAL, jClass, storedProcedureMethod.getDtoFieldName());</span>
+<span class="fc" id="L152">            constructor.body().assign(field, JExpr._new(jClass).arg(dataSource));</span>
+<span class="fc" id="L153">            return field;</span>
+        }
+
+        /**
+         * Generates:
+         * &lt;pre&gt;
+         * public {DTO_METHOD_RETURN_TYPE} {DTO_METHOD_NAME}({DTO_METHOD_PARAMETERS}) {
+         *      return (({DTO_METHOD_RETURN_TYPE}) {SP_NAME_VARIABLE}.execute({DTO_METHOD_PARAMETERS}).get(&quot;#result-set-0&quot;));
+         * }
+         * &lt;/pre&gt;
+         * If it's a ResultSet:
+         * &lt;pre&gt;
+         * public {DTO_METHOD_RETURN_TYPE} {DTO_METHOD_NAME}({DTO_METHOD_PARAMETERS}) {
+         *      Map&lt;String, Object&gt; map = {SP_NAME_VARIABLE}.execute({DTO_METHOD_PARAMETERS});
+         *      return new {DTO_METHOD_RETURN_TYPE}((*)map.get(&quot;#result-set-0&quot;), (*)map.get(&quot;#result-set-*&quot;), ...);
+         * }
+         * &lt;/pre&gt;
+         */
+        private void addDtoMethod(StoredProcedureMethod storedProcedureMethod, JFieldVar field) throws JClassAlreadyExistsException {
+<span class="fc" id="L172">            JClass returnClass = getReturnClass(storedProcedureMethod);</span>
+<span class="fc" id="L173">            JMethod method = dtoJClass.method(JMod.PUBLIC, returnClass, storedProcedureMethod.getMethodName());</span>
+<span class="fc" id="L174">            addAnnotations(storedProcedureMethod, method);</span>
+<span class="fc" id="L175">            JInvocation execute = getExecute(storedProcedureMethod, field, method);</span>
+
+<span class="fc bfc" id="L177" title="All 2 branches covered.">            if (&quot;void&quot;.equals(storedProcedureMethod.getReturnTypeInfo().getType())) {</span>
+<span class="fc" id="L178">                method.body().add(execute);</span>
+<span class="fc bfc" id="L179" title="All 2 branches covered.">            } else if (resultSetMap.containsKey(storedProcedureMethod.getReturnTypeInfo().getType())) {</span>
+<span class="fc" id="L180">                multipleResultSets(storedProcedureMethod, returnClass, method, execute);</span>
+            } else {
+<span class="fc" id="L182">                singleResultSet(storedProcedureMethod, returnClass, method, execute);</span>
+            }
+<span class="fc" id="L184">        }</span>
+
+        /**
+         * Generates:
+         * &lt;pre&gt;
+         * {FIELD}.execute( [ * ]* )
+         * &lt;/pre&gt;
+         */
+        private JInvocation getExecute(StoredProcedureMethod storedProcedureMethod, JFieldVar field, JMethod method) {
+<span class="fc" id="L193">            JInvocation execute = JExpr.invoke(field, &quot;execute&quot;);</span>
+
+<span class="fc bfc" id="L195" title="All 2 branches covered.">            for (Variable variable : storedProcedureMethod.getArguments()) {</span>
+<span class="fc" id="L196">                JVar param = method.param(model.directClass(variable.getTypeInfo().asString()), variable.getName());</span>
+<span class="fc" id="L197">                execute.arg(param);</span>
+<span class="fc" id="L198">            }</span>
+<span class="fc" id="L199">            return execute;</span>
+        }
+
+        /**
+         * Generates the class for the return type.
+         */
+        private JClass getReturnClass(StoredProcedureMethod storedProcedureMethod) {
+<span class="fc" id="L206">            Optional&lt;String&gt; genericType = storedProcedureMethod.getReturnTypeInfo().getGenericType();</span>
+<span class="fc" id="L207">            JClass returnClass = model.ref(storedProcedureMethod.getReturnTypeInfo().getType());</span>
+
+<span class="fc bfc" id="L209" title="All 2 branches covered.">            if (genericType.isPresent()) {</span>
+<span class="fc" id="L210">                returnClass = returnClass.narrow(model.ref(genericType.get()));</span>
+            }
+
+<span class="fc" id="L213">            return returnClass;</span>
+        }
+
+        /**
+         * Adds the annotations to the method.
+         */
+        private void addAnnotations(StoredProcedureMethod storedProcedureMethod, JMethod method) throws JClassAlreadyExistsException {
+<span class="fc bfc" id="L220" title="All 2 branches covered.">            for (AnnotationInfo annotationInfo : storedProcedureMethod.getAnnotations()) {</span>
+<span class="fc" id="L221">                JAnnotationUse jAnnotationUse = method.annotate(model.ref(annotationInfo.getAnnotationType()));</span>
+
+<span class="fc bfc" id="L223" title="All 2 branches covered.">                for (AnnotationValueInfo annotationValueInfo : annotationInfo.getAnnotationValueInfos()) {</span>
+<span class="fc" id="L224">                    addAnnotationParam(jAnnotationUse, annotationValueInfo);</span>
+<span class="fc" id="L225">                }</span>
+<span class="fc" id="L226">            }</span>
+<span class="fc" id="L227">        }</span>
+
+        /**
+         * Generates the body of the DTO method for methods with several result-sets.
+         * &lt;p&gt;
+         * Example:
+         * &lt;pre&gt;
+         * Map&lt;String, Object&gt; map;
+         * map = sp*.execute(id);
+         * List&lt;*&gt; list0;
+         * list0 = ((*&gt; ) map.get(&quot;#result-set-0&quot;));
+         * * obj0;
+         * if (list0 .size() == 1) {
+         *     obj0 = list0.get(0);
+         * } else {
+         *     if (list0.size() == 0) {
+         *         throw new ObjectDoesNotExist();
+         *     } else {
+         *         throw new MultipleObjectsReturned();
+         *     }
+         * }
+         * List&lt;*&gt; list1;
+         * list1 = ((&lt;*&gt; ) map.get(&quot;#result-set-1&quot;));
+         * return new *ResultSet(obj0, list1);
+         * &lt;/pre&gt;
+         * &lt;p&gt;
+         * Example if the entity in the ResultSet is annotated with @ReturnNull:
+         * &lt;pre&gt;
+         * Map&lt;String, Object&gt; map;
+         * map = sp*.execute(id);
+         * List&lt;*&gt; list0;
+         * list0 = ((List&lt;*&gt;) map.get(&quot;#result-set-0&quot;));
+         * * obj0;
+         * if (list0.size() == 1) {
+         *     obj0 = list0.get(0);
+         * } else {
+         *     if (list0.size() == 0) {
+         *         obj0 = null;
+         *     } else {
+         *         throw new MultipleObjectsReturned();
+         *     }
+         * }
+         * List&lt;*&gt; list1;
+         * list1 = ((List&lt;*&gt;) map.get(&quot;#result-set-1&quot;));
+         * return new *ResultSet(obj0, list1);
+         * &lt;/pre&gt;
+         * &lt;p&gt;
+         * Example if the entity in the ResultSet is an Optional:
+         * &lt;pre&gt;
+         * Map&lt;String, Object&gt; map;
+         * map = sp*.execute(id);
+         * List&lt;*&gt; list0;
+         * list0 = ((List&lt;*&gt;) map.get(&quot;#result-set-0&quot;));
+         * Optional obj0;
+         * if (list0.size() == 1) {
+         *     obj0 = Optional.of(list0.get(0));
+         * } else {
+         *     if (list0.size() == 0) {
+         *         obj0 = Optional.empty();
+         *     } else {
+         *         throw new MultipleObjectsReturned();
+         *     }
+         * }
+         * List&lt;*&gt; list1;
+         * list1 = ((List&lt;*&gt;) map.get(&quot;#result-set-1&quot;));
+         * return new *ResultSet(obj0, list1);
+         * &lt;/pre&gt;
+         */
+        private void multipleResultSets(StoredProcedureMethod storedProcedureMethod, JClass returnClass, JMethod method, JInvocation execute) {
+<span class="fc" id="L296">            JVar map = method.body().decl(CodeModelUtil.getMapStringObject(model), &quot;map&quot;);</span>
+<span class="fc" id="L297">            method.body().assign(map, execute);</span>
+<span class="fc" id="L298">            JInvocation resultSetsInvoke = JExpr._new(returnClass);</span>
+
+<span class="fc" id="L300">            List&lt;JVar&gt; args = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L301">            List&lt;ResultSetVariable&gt; variables = resultSetMap.get(storedProcedureMethod.getReturnTypeInfo().getType()).getResultSetVariables();</span>
+
+<span class="fc bfc" id="L303" title="All 2 branches covered.">            for (int i = 0; i &lt; variables.size(); i++) {</span>
+<span class="fc" id="L304">                ResultSetVariable variable = variables.get(i);</span>
+<span class="fc" id="L305">                Optional&lt;String&gt; genericType = variable.getTypeInfo().getGenericType();</span>
+
+<span class="fc bfc" id="L307" title="All 2 branches covered.">                if (genericType.isPresent()) {</span>
+<span class="fc bfc" id="L308" title="All 2 branches covered.">                    if (Optional.class.getCanonicalName().equals(variable.getTypeInfo().getType())) {</span>
+<span class="fc" id="L309">                        JClass varType = CodeModelUtil.getGenericList(model, variable.getTypeInfo().getGenericType().get());</span>
+<span class="fc" id="L310">                        JVar list = method.body().decl(varType, &quot;list&quot; + i);</span>
+<span class="fc" id="L311">                        method.body().assign(list, JExpr.cast(varType, map.invoke(&quot;get&quot;).arg(&quot;#result-set-&quot; + i)));</span>
+
+<span class="fc" id="L313">                        JVar obj = method.body().decl(model.directClass(variable.getTypeInfo().getType()), &quot;obj&quot; + i);</span>
+<span class="fc" id="L314">                        JConditional condition = method.body()._if(list.invoke(&quot;size&quot;).eq(JExpr.lit(1)));</span>
+<span class="fc" id="L315">                        condition._then().assign(obj, model.directClass(Optional.class.getCanonicalName()).staticInvoke(&quot;of&quot;).arg(list.invoke(&quot;get&quot;).arg(JExpr.lit(0))));</span>
+
+<span class="fc" id="L317">                        condition = condition._elseif(list.invoke(&quot;size&quot;).eq(JExpr.lit(0)));</span>
+<span class="fc" id="L318">                        condition._then().assign(obj, model.directClass(Optional.class.getCanonicalName()).staticInvoke(&quot;empty&quot;));</span>
+<span class="fc" id="L319">                        condition._else()._throw(JExpr._new(model.directClass(MultipleObjectsReturned.class.getCanonicalName())));</span>
+
+<span class="fc" id="L321">                        args.add(obj);</span>
+<span class="fc" id="L322">                    } else {</span>
+<span class="fc" id="L323">                        JClass varType = model.directClass(variable.getTypeInfo().getType()).narrow(model.directClass(genericType.get()));</span>
+<span class="fc" id="L324">                        JVar list = method.body().decl(varType, &quot;list&quot; + i);</span>
+<span class="fc" id="L325">                        method.body().assign(list, JExpr.cast(varType, map.invoke(&quot;get&quot;).arg(&quot;#result-set-&quot; + i)));</span>
+<span class="fc" id="L326">                        args.add(list);</span>
+<span class="fc" id="L327">                    }</span>
+                } else {
+<span class="fc" id="L329">                    JClass varType = CodeModelUtil.getGenericList(model, variable.getTypeInfo().getType());</span>
+<span class="fc" id="L330">                    JVar list = method.body().decl(varType, &quot;list&quot; + i);</span>
+<span class="fc" id="L331">                    method.body().assign(list, JExpr.cast(varType, map.invoke(&quot;get&quot;).arg(&quot;#result-set-&quot; + i)));</span>
+
+<span class="fc" id="L333">                    JVar obj = method.body().decl(model.directClass(variable.getTypeInfo().getType()), &quot;obj&quot; + i);</span>
+<span class="fc" id="L334">                    JConditional condition = method.body()._if(list.invoke(&quot;size&quot;).eq(JExpr.lit(1)));</span>
+<span class="fc" id="L335">                    condition._then().assign(obj, list.invoke(&quot;get&quot;).arg(JExpr.lit(0)));</span>
+
+<span class="fc bfc" id="L337" title="All 2 branches covered.">                    if (variable.useNullInsteadOfAnException()) {</span>
+<span class="fc" id="L338">                        condition = condition._elseif(list.invoke(&quot;size&quot;).eq(JExpr.lit(0)));</span>
+<span class="fc" id="L339">                        condition._then().assign(obj, JExpr._null());</span>
+<span class="fc" id="L340">                        condition._else()._throw(JExpr._new(model.directClass(MultipleObjectsReturned.class.getCanonicalName())));</span>
+                    } else {
+<span class="fc" id="L342">                        condition = condition._elseif(list.invoke(&quot;size&quot;).eq(JExpr.lit(0)));</span>
+<span class="fc" id="L343">                        condition._then()._throw(JExpr._new(model.directClass(ObjectDoesNotExist.class.getCanonicalName())));</span>
+<span class="fc" id="L344">                        condition._else()._throw(JExpr._new(model.directClass(MultipleObjectsReturned.class.getCanonicalName())));</span>
+                    }
+
+<span class="fc" id="L347">                    args.add(obj);</span>
+                }
+            }
+
+<span class="fc" id="L351">            args.forEach(resultSetsInvoke::arg);</span>
+
+<span class="fc" id="L353">            method.body()._return(resultSetsInvoke);</span>
+<span class="fc" id="L354">        }</span>
+
+        /**
+         * Generates the body of the DTO method for methods with exactly one result-set.
+         * &lt;p&gt;
+         * If the method's return value is a list:
+         * &lt;pre&gt;
+         * return ((List&lt;*&gt;) sp*.execute().get(&quot;#result-set-0&quot;));
+         * &lt;/pre&gt;
+         * &lt;p&gt;
+         * If the method's return value is an entity:
+         * &lt;pre&gt;
+         * List&lt;*&gt; list;
+         * list = ((List&lt;*&gt; ) sp*.execute( [ * ]* ).get(&quot;#result-set-0&quot;));
+         * if (list.size() == 1) {
+         *     return list.get(0);
+         * } else {
+         *     if (list.size() == 0) {
+         *         throw new ObjectDoesNotExist();
+         *     } else {
+         *         throw new MultipleObjectsReturned();
+         *     }
+         * }
+         * &lt;/pre&gt;
+         * &lt;p&gt;
+         * If the method's return value is an entity and the method is annotated with @ReturnNull:
+         * &lt;pre&gt;
+         * List&lt;*&gt; list;
+         * list = ((List&lt;*&gt; ) sp*.execute( [ * ]* ).get(&quot;#result-set-0&quot;));
+         * if (list.size() == 1) {
+         *     return list.get(0);
+         * } else {
+         *     if (list.size() == 0) {
+         *         return null;
+         *     } else {
+         *         throw new MultipleObjectsReturned();
+         *     }
+         * }
+         * &lt;/pre&gt;
+         * &lt;p&gt;
+         * If the method's return value is an Optional of an entity:
+         * &lt;pre&gt;
+         * List&lt;*&gt; list;
+         * list = ((List&lt;*&gt; ) sp*.execute( [ * ]* ).get(&quot;#result-set-0&quot;));
+         * if (list.size() == 1) {
+         *     return Optional.of(list.get(0));
+         * } else {
+         *     if (list.size() == 0) {
+         *         return Optional.empty();
+         *     } else {
+         *         throw new MultipleObjectsReturned();
+         *     }
+         * }
+         * &lt;/pre&gt;
+         */
+        private void singleResultSet(StoredProcedureMethod storedProcedureMethod, JClass returnClass, JMethod method, JInvocation execute) {
+<span class="fc bfc" id="L410" title="All 2 branches covered.">            if (storedProcedureMethod.getReturnTypeInfo().getGenericType().isPresent()) {</span>
+<span class="fc bfc" id="L411" title="All 2 branches covered.">                if (Optional.class.getCanonicalName().equals(storedProcedureMethod.getReturnTypeInfo().getType())) {</span>
+<span class="fc" id="L412">                    String genericClassType = storedProcedureMethod.getReturnTypeInfo().getGenericType().get();</span>
+<span class="fc" id="L413">                    JVar list = method.body().decl(CodeModelUtil.getGenericList(model, genericClassType), &quot;list&quot;);</span>
+<span class="fc" id="L414">                    method.body().assign(list, JExpr.cast(model.ref(List.class).narrow(model.ref(genericClassType)), execute.invoke(&quot;get&quot;).arg(&quot;#result-set-0&quot;)));</span>
+<span class="fc" id="L415">                    JConditional condition = method.body()._if(list.invoke(&quot;size&quot;).eq(JExpr.lit(1)));</span>
+<span class="fc" id="L416">                    condition._then()._return(model.directClass(Optional.class.getCanonicalName()).staticInvoke(&quot;of&quot;).arg(list.invoke(&quot;get&quot;).arg(JExpr.lit(0))));</span>
+<span class="fc" id="L417">                    condition = condition._elseif(list.invoke(&quot;size&quot;).eq(JExpr.lit(0)));</span>
+<span class="fc" id="L418">                    condition._then()._return(model.directClass(Optional.class.getCanonicalName()).staticInvoke(&quot;empty&quot;));</span>
+<span class="fc" id="L419">                    condition._else()._throw(JExpr._new(model.directClass(MultipleObjectsReturned.class.getCanonicalName())));</span>
+<span class="fc" id="L420">                } else {</span>
+<span class="fc" id="L421">                    method.body()._return(JExpr.cast(returnClass, execute.invoke(&quot;get&quot;).arg(&quot;#result-set-0&quot;)));</span>
+                }
+            } else {
+<span class="fc" id="L424">                JVar list = method.body().decl(CodeModelUtil.getGenericList(model, storedProcedureMethod.getReturnTypeInfo().getType()), &quot;list&quot;);</span>
+<span class="fc" id="L425">                method.body().assign(list, JExpr.cast(model.ref(List.class).narrow(returnClass), execute.invoke(&quot;get&quot;).arg(&quot;#result-set-0&quot;)));</span>
+<span class="fc" id="L426">                JConditional condition = method.body()._if(list.invoke(&quot;size&quot;).eq(JExpr.lit(1)));</span>
+<span class="fc" id="L427">                condition._then()._return(list.invoke(&quot;get&quot;).arg(JExpr.lit(0)));</span>
+
+<span class="fc bfc" id="L429" title="All 2 branches covered.">                if (storedProcedureMethod.useNullInsteadOfAnException()) {</span>
+<span class="fc" id="L430">                    condition = condition._elseif(list.invoke(&quot;size&quot;).eq(JExpr.lit(0)));</span>
+<span class="fc" id="L431">                    condition._then()._return(JExpr._null());</span>
+<span class="fc" id="L432">                    condition._else()._throw(JExpr._new(model.directClass(MultipleObjectsReturned.class.getCanonicalName())));</span>
+                } else {
+<span class="fc" id="L434">                    condition = condition._elseif(list.invoke(&quot;size&quot;).eq(JExpr.lit(0)));</span>
+<span class="fc" id="L435">                    condition._then()._throw(JExpr._new(model.directClass(ObjectDoesNotExist.class.getCanonicalName())));</span>
+<span class="fc" id="L436">                    condition._else()._throw(JExpr._new(model.directClass(MultipleObjectsReturned.class.getCanonicalName())));</span>
+                }
+            }
+<span class="fc" id="L439">        }</span>
+
+        private void addAnnotationParam(JAnnotationUse jAnnotationUse, AnnotationValueInfo annotationValueInfo) throws JClassAlreadyExistsException {
+<span class="fc" id="L442">            Object value = annotationValueInfo.getValue();</span>
+<span class="fc" id="L443">            String annotationName = annotationValueInfo.getName();</span>
+
+<span class="pc bpc" id="L445" title="1 of 2 branches missed.">            if (value instanceof Boolean) {</span>
+<span class="nc" id="L446">                jAnnotationUse.param(annotationName, (Boolean) value);</span>
+<span class="pc bpc" id="L447" title="1 of 2 branches missed.">            } else if (value instanceof Byte) {</span>
+<span class="nc" id="L448">                jAnnotationUse.param(annotationName, (Byte) value);</span>
+<span class="pc bpc" id="L449" title="1 of 2 branches missed.">            } else if (value instanceof Character) {</span>
+<span class="nc" id="L450">                jAnnotationUse.param(annotationName, (Character) value);</span>
+<span class="pc bpc" id="L451" title="1 of 2 branches missed.">            } else if (value instanceof Double) {</span>
+<span class="nc" id="L452">                jAnnotationUse.param(annotationName, (Double) value);</span>
+<span class="pc bpc" id="L453" title="1 of 2 branches missed.">            } else if (value instanceof Float) {</span>
+<span class="nc" id="L454">                jAnnotationUse.param(annotationName, (Float) value);</span>
+<span class="pc bpc" id="L455" title="1 of 2 branches missed.">            } else if (value instanceof Long) {</span>
+<span class="nc" id="L456">                jAnnotationUse.param(annotationName, (Long) value);</span>
+<span class="pc bpc" id="L457" title="1 of 2 branches missed.">            } else if (value instanceof Short) {</span>
+<span class="nc" id="L458">                jAnnotationUse.param(annotationName, (Short) value);</span>
+<span class="pc bpc" id="L459" title="1 of 2 branches missed.">            } else if (value instanceof Integer) {</span>
+<span class="nc" id="L460">                jAnnotationUse.param(annotationName, (Integer) value);</span>
+<span class="pc bpc" id="L461" title="1 of 2 branches missed.">            } else if (value instanceof String) {</span>
+<span class="nc" id="L462">                jAnnotationUse.param(annotationName, (String) value);</span>
+<span class="pc bpc" id="L463" title="1 of 2 branches missed.">            } else if (value instanceof DeclaredType) {</span>
+<span class="nc" id="L464">                jAnnotationUse.param(annotationName, model.ref(value.toString()));</span>
+<span class="fc bfc" id="L465" title="All 2 branches covered.">            } else if (value instanceof Element) {</span>
+<span class="fc" id="L466">                String qualifiedEnumName = StringUtil.getPackage(annotationValueInfo.getType());</span>
+<span class="fc" id="L467">                JPackage dtoJPackage = new JCodeModel()._package(StringUtil.getPackage(qualifiedEnumName));</span>
+<span class="fc" id="L468">                JDefinedClass enumClass = dtoJPackage._class(StringUtil.getSimpleClassName(qualifiedEnumName));</span>
+<span class="fc" id="L469">                jAnnotationUse.param(annotationName, enumClass.enumConstant(value.toString()));</span>
+<span class="pc bpc" id="L470" title="1 of 2 branches missed.">            } else if (value instanceof List) {</span>
+<span class="fc" id="L471">                JAnnotationArrayMember jAnnotationArrayMember = jAnnotationUse.paramArray(annotationName);</span>
+
+<span class="fc bfc" id="L473" title="All 2 branches covered.">                for (Object annotationValueObj : (List) value) {</span>
+<span class="fc" id="L474">                    AnnotationValue annotationValue = (AnnotationValue) annotationValueObj;</span>
+
+<span class="fc" id="L476">                    AnnotationValueInfo annotation = new AnnotationValueInfo(&quot;&quot;, annotationValue.getValue(), annotationValue.toString());</span>
+<span class="fc" id="L477">                    addAnnotationArrayMemberParam(jAnnotationArrayMember, annotation);</span>
+<span class="fc" id="L478">                }</span>
+            }
+<span class="fc" id="L480">        }</span>
+
+        private void addAnnotationArrayMemberParam(JAnnotationArrayMember jAnnotationArrayMember, AnnotationValueInfo annotationValueInfo) throws JClassAlreadyExistsException {
+<span class="fc" id="L483">            Object value = annotationValueInfo.getValue();</span>
+
+<span class="pc bpc" id="L485" title="1 of 2 branches missed.">            if (value instanceof Boolean) {</span>
+<span class="nc" id="L486">                jAnnotationArrayMember.param((Boolean) value);</span>
+<span class="pc bpc" id="L487" title="1 of 2 branches missed.">            } else if (value instanceof Byte) {</span>
+<span class="nc" id="L488">                jAnnotationArrayMember.param((Byte) value);</span>
+<span class="pc bpc" id="L489" title="1 of 2 branches missed.">            } else if (value instanceof Character) {</span>
+<span class="nc" id="L490">                jAnnotationArrayMember.param((Character) value);</span>
+<span class="pc bpc" id="L491" title="1 of 2 branches missed.">            } else if (value instanceof Double) {</span>
+<span class="nc" id="L492">                jAnnotationArrayMember.param((Double) value);</span>
+<span class="pc bpc" id="L493" title="1 of 2 branches missed.">            } else if (value instanceof Float) {</span>
+<span class="nc" id="L494">                jAnnotationArrayMember.param((Float) value);</span>
+<span class="pc bpc" id="L495" title="1 of 2 branches missed.">            } else if (value instanceof Long) {</span>
+<span class="nc" id="L496">                jAnnotationArrayMember.param((Long) value);</span>
+<span class="pc bpc" id="L497" title="1 of 2 branches missed.">            } else if (value instanceof Short) {</span>
+<span class="nc" id="L498">                jAnnotationArrayMember.param((Short) value);</span>
+<span class="pc bpc" id="L499" title="1 of 2 branches missed.">            } else if (value instanceof Integer) {</span>
+<span class="nc" id="L500">                jAnnotationArrayMember.param((Integer) value);</span>
+<span class="pc bpc" id="L501" title="1 of 2 branches missed.">            } else if (value instanceof String) {</span>
+<span class="nc" id="L502">                jAnnotationArrayMember.param((String) value);</span>
+<span class="pc bpc" id="L503" title="1 of 2 branches missed.">            } else if (value instanceof DeclaredType) {</span>
+<span class="fc" id="L504">                jAnnotationArrayMember.param(model.ref(value.toString()));</span>
+<span class="nc bnc" id="L505" title="All 2 branches missed.">            } else if (value instanceof Element) {</span>
+<span class="nc" id="L506">                String qualifiedEnumName = StringUtil.getPackage(annotationValueInfo.getType());</span>
+<span class="nc" id="L507">                JPackage dtoJPackage = new JCodeModel()._package(StringUtil.getPackage(qualifiedEnumName));</span>
+<span class="nc" id="L508">                JDefinedClass enumClass = dtoJPackage._class(StringUtil.getSimpleClassName(qualifiedEnumName));</span>
+<span class="nc" id="L509">                jAnnotationArrayMember.param(enumClass.enumConstant(value.toString()));</span>
+            }
+<span class="fc" id="L511">        }</span>
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.eclemma.org/jacoco">JaCoCo</a> 0.7.2.201409121644</span></div></body></html>
