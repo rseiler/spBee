@@ -14,7 +14,7 @@ Everything is done at compile time. Therefore there is no performance shortcomin
 
 # Documentation
 
-Visit the documentation at: [Latest Documentation](https://rseiler.github.io/spbee/index.html)
+Visit the documentation at: [Latest Documentation](https://rseiler.github.io/spBee/index.html)
 
 
 # License
