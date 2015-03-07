@@ -109,8 +109,8 @@ public class DtoCollector {
     }
 
     /**
-     * Checks if the method is annotated with {@link at.rseiler.spbee.core.annotation.StoredProcedure}.
-     * If it is than the method is added to the DtoClass.
+     * Checks if the method is annotated with {@link at.rseiler.spbee.core.annotation.StoredProcedure}
+     * and then the method is added to the DtoClass.
      *
      * @param dtoClass the DTO class to which the method belongs
      */

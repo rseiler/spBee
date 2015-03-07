@@ -82,9 +82,9 @@ public class EntityClassCollector {
 
     /**
      * Checks if the element is a constructor which is is public.
-     * If an constructor annotated with {@link at.rseiler.spbee.core.annotation.MappingConstructor} exists than all other
+     * If an constructor annotated with {@link at.rseiler.spbee.core.annotation.MappingConstructor} exists then all other
      * constructors without such annotation will be ignored.
-     * If no other constructor is annotated with {@link at.rseiler.spbee.core.annotation.MappingConstructor} than the
+     * If no other constructor is annotated with {@link at.rseiler.spbee.core.annotation.MappingConstructor} then the
      * constructor without the {@link at.rseiler.spbee.core.annotation.MappingConstructor} is considered.
      *
      * @param annotatedMappingConstructorExists if an constructor with the {@link at.rseiler.spbee.core.annotation.MappingConstructor} annotation exists

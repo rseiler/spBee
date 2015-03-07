@@ -30,7 +30,7 @@ Collects the data of the annotated ```@Dto``` interfaces and classes.
 
 Collects the data of the annotated @Entity classes.
 
-* collects the constructors annotated with @MappingConstructor. If no constructor is annotated with ```@MappingConstructor``` than the public constructor is used.
+* collects the constructors annotated with @MappingConstructor. If no constructor is annotated with ```@MappingConstructor``` then the public constructor is used.
     * collects all parameters
     * reads the ```@MappingConstructor``` annotation
 * with this data a MapperClass object is created
@@ -165,7 +165,7 @@ public UserPermissionsResultSet getUserWithPermissions(int id) {
 ### MapperGenerator
 
 Generates the code for the MapperClasses. The Entity's constructor must only have basic parameters.
-It's not possible to use other entities in the constructor. If a more complex mapping is required than write an own
+It's not possible to use other entities in the constructor. If a more complex mapping is required then write an own
 MapperClass and use the @RowMapper annotation.
 
 <div class="source">

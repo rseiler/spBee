@@ -13,14 +13,14 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Logs the stored procedure execution durations.
  * <p>
- * If the stored procedure call exceed 200 ms (default value) than the call is logged as WARNING like:
+ * If the stored procedure call exceed 200 ms (default value) then the call is logged as WARNING like:
  * <code>n ms sp_name[sp_arguments]#sp_call_count</code>.
  * Example: <code>17 ms sp_get_user[3]#1</code>
  * <p>
  * The default value can be changed with the <code>interceptor.splogger.slow.query.duration</code> property in <code>/spbee.properties</code>.
  * <p>
  * The logger name is: <code>spLogger</code>
- * If TRACE is enabled than every stored procedure call is logged.
+ * If TRACE is enabled then every stored procedure call is logged.
  *
  * @author Reinhard Seiler {@literal <rseiler.developer@gmail.com>}
  */

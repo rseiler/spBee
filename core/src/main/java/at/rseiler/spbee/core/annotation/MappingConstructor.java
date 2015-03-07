@@ -11,7 +11,7 @@ import static java.lang.annotation.ElementType.*;
  * <ul>
  * <li>
  * Marks a public constructor in a {@link at.rseiler.spbee.core.annotation.Entity} as mapping constructor. If more than
- * one mapping constructor is used than different  names can be used. It's not allowed that two constructors have the
+ * one mapping constructor is used then different  names can be used. It's not allowed that two constructors have the
  * same name.
  * </li>
  * <li>

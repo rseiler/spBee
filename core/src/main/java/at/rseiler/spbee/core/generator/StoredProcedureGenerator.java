@@ -146,7 +146,7 @@ public class StoredProcedureGenerator extends AbstractGenerator {
     }
 
     /**
-     * If the type is a {@link at.rseiler.spbee.core.annotation.ResultSet} than multiple result-sets are declared.
+     * If the type is a {@link at.rseiler.spbee.core.annotation.ResultSet} then multiple result-sets are declared.
      * <p>
      * Generates:
      * <pre>
@@ -165,7 +165,7 @@ public class StoredProcedureGenerator extends AbstractGenerator {
     }
 
     /**
-     * If it's a basic type than only one result-set is declared.
+     * If it's a basic type then only one result-set is declared.
      * <p>
      * Generates:
      * <pre>

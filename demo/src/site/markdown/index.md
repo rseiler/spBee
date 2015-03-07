@@ -1,7 +1,7 @@
 # spBee - Demo
 
 The thought behind this module is to demonstrate the usage of the spBee framework and to show the Maven configuration.
-In addition it's used as integration test for the spBee framework. If a unit test fails than something is fishy.
+In addition it's used as integration test for the spBee framework. If a unit test fails then something is fishy.
 
 There is not much to say. The complete project is kept as simple as possible.
 
