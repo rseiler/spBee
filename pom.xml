@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>at.rseiler.pom-project</groupId>
+        <artifactId>pom</artifactId>
+        <version>1.1</version>
+    </parent>
+
+    <groupId>at.rseiler.spbee</groupId>
+    <artifactId>spbee</artifactId>
+    <packaging>pom</packaging>
+    <version>1.0</version>
+    <name>spBee</name>
+    <description>
+        The spBee project which contains the core module, the demo module and the documentation.
+    </description>
+
+    <modules>
+        <module>core</module>
+        <module>demo</module>
+    </modules>
+
+    <properties>
+        <!-- multi project config -->
+        <main.basedir>${project.basedir}</main.basedir>
+        <skipDependencyPlugin>false</skipDependencyPlugin>
+
+        <git-uri>git:https://github.com/rseiler/spbee.git</git-uri>
+
+        <java.version>1.8</java.version>
+        <spring.version>4.1.5.RELEASE</spring.version>
+        <hsqldb.version>2.3.2</hsqldb.version>
+        <commons-io.version>1.3.2</commons-io.version>
+        <log4j.version>1.2.17</log4j.version>
+        <maven-compiler-plugin.version>3.2</maven-compiler-plugin.version>
+        <maven-clean-plugin.version>2.5</maven-clean-plugin.version>
+    </properties>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-scm-publish-plugin</artifactId>
+                <version>1.1</version>
+                <inherited>true</inherited>
+                <configuration>
+                    <checkoutDirectory>${project.basedir}/github.com</checkoutDirectory>
+                    <checkinComment>publishing site documentation</checkinComment>
+                    <content>${env.HOME}/sitedocs/pom-project</content>
+                    <pubScmUrl>scm:${git-uri}</pubScmUrl>
+                    <scmBranch>gh-pages</scmBranch>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+    <scm>
+        <url>https://github.com/rseiler/pom-project.git</url>
+        <connection>scm:${git-uri}</connection>
+        <developerConnection>scm:${git-uri}</developerConnection>
+    </scm>
+
+    <distributionManagement>
+        <site>
+            <id>site-docs</id>
+            <url>file://${env.HOME}/sitedocs/spbee</url>
+        </site>
+    </distributionManagement>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            <distribution>repo</distribution>
+            <comments>A business-friendly OSS license</comments>
+        </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>rseiler</id>
+            <name>Reinhard Seiler</name>
+            <email>rseiler.developer@gmail.com</email>
+            <roles>
+                <role>developer</role>
+            </roles>
+        </developer>
+    </developers>
+
+</project>
