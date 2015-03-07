@@ -24,7 +24,7 @@ under the License.
          xsi:schemaLocation="http://maven.apache.org/DECORATION/1.0.0 http://maven.apache.org/xsd/decoration-1.0.0.xsd">
     <body>
         <head>
-            <script src="http://google-code-prettify.googlecode.com/svn/loader/run_prettify.js" type="text/javascript"></script>
+            <script src="//google-code-prettify.googlecode.com/svn/loader/run_prettify.js" type="text/javascript"></script>
         </head>
 
         <menu name="Overview">
