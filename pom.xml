@@ -28,7 +28,8 @@
         <main.basedir>${project.basedir}</main.basedir>
         <skipDependencyPlugin>false</skipDependencyPlugin>
 
-        <git-uri>git:https://github.com/rseiler/spbee.git</git-uri>
+        <github-uri>https://github.com/rseiler/spbee.git</github-uri>
+        <git-uri>git:${github-uri}</git-uri>
 
         <java.version>1.8</java.version>
         <spring.version>4.1.5.RELEASE</spring.version>
@@ -49,7 +50,7 @@
                 <configuration>
                     <checkoutDirectory>${project.basedir}/github.com</checkoutDirectory>
                     <checkinComment>publishing site documentation</checkinComment>
-                    <content>${env.HOME}/sitedocs/pom-project</content>
+                    <content>${env.HOME}/sitedocs/spbee</content>
                     <pubScmUrl>scm:${git-uri}</pubScmUrl>
                     <scmBranch>gh-pages</scmBranch>
                 </configuration>
@@ -58,7 +59,7 @@
     </build>
 
     <scm>
-        <url>https://github.com/rseiler/pom-project.git</url>
+        <url>${github-uri}</url>
         <connection>scm:${git-uri}</connection>
         <developerConnection>scm:${git-uri}</developerConnection>
     </scm>
