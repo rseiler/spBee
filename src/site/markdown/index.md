@@ -27,9 +27,6 @@ Then read [my thoughts about](why-stored-procedures.html) that topic.
 Spring is needed because spBee builds on top of ```org.springframework.jdbc.object.StoredProcedure``` and uses Spring`s
 Dependency Injection.
 
-__Important__: because spBee is not yet on the Maven Central Repository it's necessary to download the project and
-install it yourself. Because spBee has a dependency on the [pom-project](https://github.com/rseiler/pom-project/) you
-need first to download and install it. Or download the [jar file directly](builds/spbee-core-1.0.jar).
 
 ## How it works (short)
 
