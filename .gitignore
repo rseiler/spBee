@@ -16,6 +16,7 @@ log/
 target/
 github.com/
 pom.xml.versionsBackup
+release.properties
 
 # Project Specific
 
