@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>at.rseiler.pom-project</groupId>
@@ -12,7 +10,7 @@
     <groupId>at.rseiler.spbee</groupId>
     <artifactId>spbee</artifactId>
     <packaging>pom</packaging>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.0</version>
     <name>spBee</name>
     <description>
         The spBee project which contains the core module, the demo module and the documentation.
@@ -20,7 +18,7 @@
 
     <modules>
         <module>spbee-core</module>
-        <module>spbee-demo</module>
+        <!--<module>spbee-demo</module>-->
     </modules>
 
     <properties>
@@ -138,7 +136,8 @@
         <url>${github-uri}</url>
         <connection>scm:${git-uri}</connection>
         <developerConnection>scm:${git-uri}</developerConnection>
-    </scm>
+      <tag>HEAD</tag>
+  </scm>
 
     <distributionManagement>
         <site>
