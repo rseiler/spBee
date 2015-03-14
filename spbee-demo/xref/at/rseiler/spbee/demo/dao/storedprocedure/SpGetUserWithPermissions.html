@@ -1,0 +1,44 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head><meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+<title>SpGetUserWithPermissions xref</title>
+<link type="text/css" rel="stylesheet" href="../../../../../../stylesheet.css" />
+</head>
+<body>
+<div id="overview"><a href="../../../../../../../apidocs/at/rseiler/spbee/demo/dao/storedprocedure/SpGetUserWithPermissions.html">View Javadoc</a></div><pre>
+<a class="jxr_linenumber" name="L1" href="#L1">1</a>   
+<a class="jxr_linenumber" name="L2" href="#L2">2</a>   <strong class="jxr_keyword">package</strong> at.rseiler.spbee.demo.dao.storedprocedure;
+<a class="jxr_linenumber" name="L3" href="#L3">3</a>   
+<a class="jxr_linenumber" name="L4" href="#L4">4</a>   <strong class="jxr_keyword">import</strong> java.sql.Types;
+<a class="jxr_linenumber" name="L5" href="#L5">5</a>   <strong class="jxr_keyword">import</strong> java.util.Map;
+<a class="jxr_linenumber" name="L6" href="#L6">6</a>   <strong class="jxr_keyword">import</strong> javax.annotation.Generated;
+<a class="jxr_linenumber" name="L7" href="#L7">7</a>   <strong class="jxr_keyword">import</strong> javax.sql.DataSource;
+<a class="jxr_linenumber" name="L8" href="#L8">8</a>   <strong class="jxr_keyword">import</strong> at.rseiler.spbee.demo.entity.mapper.PermissionDefaultMapper;
+<a class="jxr_linenumber" name="L9" href="#L9">9</a>   <strong class="jxr_keyword">import</strong> at.rseiler.spbee.demo.mapper.SimpleUserMapper;
+<a class="jxr_linenumber" name="L10" href="#L10">10</a>  <strong class="jxr_keyword">import</strong> org.springframework.jdbc.core.SqlParameter;
+<a class="jxr_linenumber" name="L11" href="#L11">11</a>  <strong class="jxr_keyword">import</strong> org.springframework.jdbc.object.StoredProcedure;
+<a class="jxr_linenumber" name="L12" href="#L12">12</a>  
+<a class="jxr_linenumber" name="L13" href="#L13">13</a>  @Generated(value = <span class="jxr_string">"at.rseiler.spbee.core.SPBeeAnnotationProcessor"</span>, date = <span class="jxr_string">"2015-03-14T18:03:50.120+0100"</span>)
+<a class="jxr_linenumber" name="L14" href="#L14">14</a>  <strong class="jxr_keyword">public</strong> <strong class="jxr_keyword">class</strong> <a href="../../../../../../at/rseiler/spbee/demo/dao/storedprocedure/SpGetUserWithPermissions.html">SpGetUserWithPermissions</a>
+<a class="jxr_linenumber" name="L15" href="#L15">15</a>      <strong class="jxr_keyword">extends</strong> StoredProcedure
+<a class="jxr_linenumber" name="L16" href="#L16">16</a>  {
+<a class="jxr_linenumber" name="L17" href="#L17">17</a>  
+<a class="jxr_linenumber" name="L18" href="#L18">18</a>  
+<a class="jxr_linenumber" name="L19" href="#L19">19</a>      <strong class="jxr_keyword">public</strong> <a href="../../../../../../at/rseiler/spbee/demo/dao/storedprocedure/SpGetUserWithPermissions.html">SpGetUserWithPermissions</a>(DataSource dataSource) {
+<a class="jxr_linenumber" name="L20" href="#L20">20</a>          <strong class="jxr_keyword">super</strong>(dataSource, <span class="jxr_string">"sp_get_user_with_permissions"</span>);
+<a class="jxr_linenumber" name="L21" href="#L21">21</a>          declareParameter(<strong class="jxr_keyword">new</strong> SqlParameter(<span class="jxr_string">"id"</span>, Types.INTEGER));
+<a class="jxr_linenumber" name="L22" href="#L22">22</a>          declareParameter(<strong class="jxr_keyword">new</strong> org.springframework.jdbc.core.SqlReturnResultSet(<span class="jxr_string">"#result-set-0"</span>, <strong class="jxr_keyword">new</strong> <a href="../../../../../../at/rseiler/spbee/demo/mapper/SimpleUserMapper.html">SimpleUserMapper</a>()));
+<a class="jxr_linenumber" name="L23" href="#L23">23</a>          declareParameter(<strong class="jxr_keyword">new</strong> org.springframework.jdbc.core.SqlReturnResultSet(<span class="jxr_string">"#result-set-1"</span>, <strong class="jxr_keyword">new</strong> <a href="../../../../../../at/rseiler/spbee/demo/entity/mapper/PermissionDefaultMapper.html">PermissionDefaultMapper</a>()));
+<a class="jxr_linenumber" name="L24" href="#L24">24</a>          compile();
+<a class="jxr_linenumber" name="L25" href="#L25">25</a>      }
+<a class="jxr_linenumber" name="L26" href="#L26">26</a>  
+<a class="jxr_linenumber" name="L27" href="#L27">27</a>      <strong class="jxr_keyword">public</strong> Map&lt;String, Object&gt; execute(<strong class="jxr_keyword">int</strong> id) {
+<a class="jxr_linenumber" name="L28" href="#L28">28</a>          <strong class="jxr_keyword">return</strong> <strong class="jxr_keyword">super</strong>.execute(id);
+<a class="jxr_linenumber" name="L29" href="#L29">29</a>      }
+<a class="jxr_linenumber" name="L30" href="#L30">30</a>  
+<a class="jxr_linenumber" name="L31" href="#L31">31</a>  }
+</pre>
+<hr/>
+<div id="footer">Copyright &#169; 2015. All rights reserved.</div>
+</body>
+</html>
