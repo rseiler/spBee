@@ -10,7 +10,7 @@
     <groupId>at.rseiler.spbee</groupId>
     <artifactId>spbee</artifactId>
     <packaging>pom</packaging>
-    <version>1.0</version>
+    <version>1.1-SNAPSHOT</version>
     <name>spBee</name>
     <description>
         The spBee project which contains the core module, the demo module and the documentation.
@@ -18,7 +18,7 @@
 
     <modules>
         <module>spbee-core</module>
-        <!--<module>spbee-demo</module>-->
+        <module>spbee-demo</module>
     </modules>
 
     <properties>
