@@ -19,7 +19,6 @@
         <main.basedir>${project.parent.basedir}</main.basedir>
         <skipDependencyPlugin>false</skipDependencyPlugin>
 
-        <codemodel.version>2.6</codemodel.version>
         <maven-jar-plugin.version>2.5</maven-jar-plugin.version>
     </properties>
 

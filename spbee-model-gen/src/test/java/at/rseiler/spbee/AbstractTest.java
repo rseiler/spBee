@@ -1,4 +1,4 @@
-package at.rseiler.spbee.demo.dao;
+package at.rseiler.spbee;
 
 import at.rseiler.annotation.junit.ThreadUnsafe;
 import org.apache.commons.io.FileUtils;
@@ -27,7 +27,7 @@ public abstract class AbstractTest {
     private static final Logger LOG = Logger.getLogger(AbstractTest.class);
 
     @Autowired
-    ApplicationContext applicationContext;
+    protected ApplicationContext applicationContext;
 
     @Before
     public void setUp() throws Exception {
