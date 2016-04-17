@@ -13,11 +13,11 @@ import java.io.Writer;
  *
  * @author Reinhard Seiler {@literal <rseiler.developer@gmail.com>}
  */
-public abstract class AbstractGenerator {
+abstract class AbstractGenerator {
 
     private final ProcessingEnvironment processingEnv;
 
-    public AbstractGenerator(ProcessingEnvironment processingEnv) {
+    AbstractGenerator(ProcessingEnvironment processingEnv) {
         this.processingEnv = processingEnv;
     }
 
@@ -28,7 +28,7 @@ public abstract class AbstractGenerator {
      * @param qualifiedClassName the name of the class
      * @throws IOException if the the Java class couldn't be created
      */
-    public void generateClass(JCodeModel model, String qualifiedClassName) throws IOException {
+    void generateClass(JCodeModel model, String qualifiedClassName) throws IOException {
         StringCodeWriter codeWriter = new StringCodeWriter();
         model.build(codeWriter);
         String javaCode = codeWriter.getJavaCode();

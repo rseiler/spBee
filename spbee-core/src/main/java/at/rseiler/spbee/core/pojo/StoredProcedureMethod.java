@@ -36,7 +36,7 @@ public class StoredProcedureMethod implements Serializable {
     private StoredProcedureData storedProcedure;
     private RowMapperData rowMapper;
     private MappingConstructorData mappingConstructor;
-    private List<Variable> arguments = new LinkedList<>();
+    private final List<Variable> arguments = new LinkedList<>();
 
     private StoredProcedureMethod() {
     }

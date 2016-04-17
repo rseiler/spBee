@@ -57,13 +57,13 @@ public class DtoGenerator extends AbstractGenerator {
         private final Properties config;
         private final DtoClass dtoClass;
         private final Map<String, ResultSetClass> resultSetMap;
-        private JCodeModel model = new JCodeModel();
+        private final JCodeModel model = new JCodeModel();
+        private final Map<String, JFieldVar> spFields = new HashMap<>();
         private JDefinedClass dtoJClass;
         private JMethod constructor;
         private JVar dataSource;
-        private Map<String, JFieldVar> spFields = new HashMap<>();
 
-        public DtoClassGeneratorInstance(Properties config, DtoClass dtoClass, Map<String, ResultSetClass> resultSetMap) {
+        DtoClassGeneratorInstance(Properties config, DtoClass dtoClass, Map<String, ResultSetClass> resultSetMap) {
             this.config = config;
             this.dtoClass = dtoClass;
             this.resultSetMap = resultSetMap;
@@ -80,11 +80,11 @@ public class DtoGenerator extends AbstractGenerator {
          * {@literal @Service} public class *DaoImpl implements *Dao
          * </pre>
          */
-        private DtoClassGeneratorInstance createClass() throws JClassAlreadyExistsException {
+        DtoClassGeneratorInstance createClass() throws JClassAlreadyExistsException {
             JPackage dtoJPackage = model._package(dtoClass.getPackage());
             dtoJClass = dtoJPackage._class(dtoClass.getSimpleClassName());
             CodeModelUtil.annotateGenerated(dtoJClass);
-            dtoJClass.annotate(model.directClass(SPRING_ANNOTATION_SERVICE));
+            dtoJClass.annotate(model.ref(SPRING_ANNOTATION_SERVICE));
             addSuperClassOrInterface();
             return this;
         }
@@ -95,9 +95,9 @@ public class DtoGenerator extends AbstractGenerator {
          * {@literal @Autowired} public * (DataSource dataSource)
          * </pre>
          */
-        public DtoClassGeneratorInstance createConstructor() {
+        DtoClassGeneratorInstance createConstructor() {
             constructor = dtoJClass.constructor(JMod.PUBLIC);
-            constructor.annotate(model.directClass(SPRING_ANNOTATION_AUTOWIRED));
+            constructor.annotate(model.ref(SPRING_ANNOTATION_AUTOWIRED));
             dataSource = constructor.param(DataSource.class, "dataSource");
 
             if (dtoClass.hasDataSourceConstructor()) {
@@ -111,7 +111,7 @@ public class DtoGenerator extends AbstractGenerator {
          * Adds the stored procedure to the constructor (to get it autowired into the class) and creates the actual
          * method to call the stored procedure.
          */
-        public DtoClassGeneratorInstance addStoredProcedureMethods() throws JClassAlreadyExistsException {
+        DtoClassGeneratorInstance addStoredProcedureMethods() throws JClassAlreadyExistsException {
             for (StoredProcedureMethod storedProcedureMethod : dtoClass.getStoredProcedureMethods()) {
                 String fieldName = storedProcedureMethod.getDtoFieldName();
 
@@ -133,9 +133,9 @@ public class DtoGenerator extends AbstractGenerator {
          */
         private void addSuperClassOrInterface() {
             if (dtoClass.isAnInterface()) {
-                dtoJClass._implements(model.directClass(dtoClass.getSuperQualifiedClassName()));
+                dtoJClass._implements(model.ref(dtoClass.getSuperQualifiedClassName()));
             } else {
-                dtoJClass._extends(model.directClass(dtoClass.getSuperQualifiedClassName()));
+                dtoJClass._extends(model.ref(dtoClass.getSuperQualifiedClassName()));
             }
         }
 
@@ -155,7 +155,7 @@ public class DtoGenerator extends AbstractGenerator {
                 throw new RuntimeException("Invalid Usage. createConstructor() must be called first.");
             }
 
-            JClass jClass = model.directClass(storedProcedureMethod.getQualifiedClassName());
+            JClass jClass = model.ref(storedProcedureMethod.getQualifiedClassName());
             JFieldVar field = dtoJClass.field(JMod.PRIVATE | JMod.FINAL, jClass, storedProcedureMethod.getDtoFieldName());
             constructor.body().assign(field, JExpr._new(jClass).arg(dataSource));
             return field;
@@ -191,7 +191,7 @@ public class DtoGenerator extends AbstractGenerator {
                     before.arg(arg);
                 }
 
-                interceptorIdObject = method.body().decl(model.directClass(Object.class.getCanonicalName()), "interceptorIdObject");
+                interceptorIdObject = method.body().decl(model.ref(Object.class.getCanonicalName()), "interceptorIdObject");
                 method.body().assign(interceptorIdObject, before);
             }
 
@@ -215,7 +215,7 @@ public class DtoGenerator extends AbstractGenerator {
             JInvocation execute = JExpr.invoke(field, "execute");
 
             for (Variable variable : storedProcedureMethod.getArguments()) {
-                JVar param = method.param(model.directClass(variable.getTypeInfo().asString()), variable.getName());
+                JVar param = method.param(model.ref(variable.getTypeInfo().asString()), variable.getName());
                 execute.arg(param);
             }
 
@@ -339,21 +339,21 @@ public class DtoGenerator extends AbstractGenerator {
 
                 if (genericType.isPresent()) {
                     if (Optional.class.getCanonicalName().equals(variable.getTypeInfo().getType())) {
-                        JClass varType = CodeModelUtil.getGenericList(model, variable.getTypeInfo().getGenericType().get());
+                        JClass varType = CodeModelUtil.getGenericList(model,  genericType.get());
                         JVar list = method.body().decl(varType, "list" + i);
                         method.body().assign(list, JExpr.cast(varType, map.invoke("get").arg("#result-set-" + i)));
 
-                        JVar obj = method.body().decl(model.directClass(variable.getTypeInfo().getType()), "obj" + i);
+                        JVar obj = method.body().decl(model.ref(variable.getTypeInfo().getType()), "obj" + i);
                         JConditional condition = method.body()._if(list.invoke("size").eq(JExpr.lit(1)));
-                        condition._then().assign(obj, model.directClass(Optional.class.getCanonicalName()).staticInvoke("of").arg(list.invoke("get").arg(JExpr.lit(0))));
+                        condition._then().assign(obj, model.ref(Optional.class).staticInvoke("of").arg(list.invoke("get").arg(JExpr.lit(0))));
 
                         condition = condition._elseif(list.invoke("size").eq(JExpr.lit(0)));
-                        condition._then().assign(obj, model.directClass(Optional.class.getCanonicalName()).staticInvoke("empty"));
-                        condition._else()._throw(JExpr._new(model.directClass(MultipleObjectsReturned.class.getCanonicalName())));
+                        condition._then().assign(obj, model.ref(Optional.class).staticInvoke("empty"));
+                        condition._else()._throw(JExpr._new(model.ref(MultipleObjectsReturned.class)));
 
                         args.add(obj);
                     } else {
-                        JClass varType = model.directClass(variable.getTypeInfo().getType()).narrow(model.directClass(genericType.get()));
+                        JClass varType = model.ref(variable.getTypeInfo().getType()).narrow(model.ref(genericType.get()));
                         JVar list = method.body().decl(varType, "list" + i);
                         method.body().assign(list, JExpr.cast(varType, map.invoke("get").arg("#result-set-" + i)));
                         args.add(list);
@@ -363,18 +363,18 @@ public class DtoGenerator extends AbstractGenerator {
                     JVar list = method.body().decl(varType, "list" + i);
                     method.body().assign(list, JExpr.cast(varType, map.invoke("get").arg("#result-set-" + i)));
 
-                    JVar obj = method.body().decl(model.directClass(variable.getTypeInfo().getType()), "obj" + i);
+                    JVar obj = method.body().decl(model.ref(variable.getTypeInfo().getType()), "obj" + i);
                     JConditional condition = method.body()._if(list.invoke("size").eq(JExpr.lit(1)));
                     condition._then().assign(obj, list.invoke("get").arg(JExpr.lit(0)));
 
                     if (variable.useNullInsteadOfAnException()) {
                         condition = condition._elseif(list.invoke("size").eq(JExpr.lit(0)));
                         condition._then().assign(obj, JExpr._null());
-                        condition._else()._throw(JExpr._new(model.directClass(MultipleObjectsReturned.class.getCanonicalName())));
+                        condition._else()._throw(JExpr._new(model.ref(MultipleObjectsReturned.class)));
                     } else {
                         condition = condition._elseif(list.invoke("size").eq(JExpr.lit(0)));
-                        condition._then()._throw(JExpr._new(model.directClass(ObjectDoesNotExist.class.getCanonicalName())));
-                        condition._else()._throw(JExpr._new(model.directClass(MultipleObjectsReturned.class.getCanonicalName())));
+                        condition._then()._throw(JExpr._new(model.ref(ObjectDoesNotExist.class)));
+                        condition._else()._throw(JExpr._new(model.ref(MultipleObjectsReturned.class)));
                     }
 
                     args.add(obj);
@@ -382,7 +382,6 @@ public class DtoGenerator extends AbstractGenerator {
             }
 
             args.forEach(resultSetsInvoke::arg);
-
             method.body()._return(resultSetsInvoke);
         }
 
@@ -454,17 +453,19 @@ public class DtoGenerator extends AbstractGenerator {
          * </pre>
          */
         private void singleResultSet(StoredProcedureMethod storedProcedureMethod, JClass returnClass, JMethod method, JInvocation execute, JVar interceptorIdObject) {
-            if (storedProcedureMethod.getReturnTypeInfo().getGenericType().isPresent()) {
+            Optional<String> genericType = storedProcedureMethod.getReturnTypeInfo().getGenericType();
+
+            if (genericType.isPresent()) {
                 if (Optional.class.getCanonicalName().equals(storedProcedureMethod.getReturnTypeInfo().getType())) {
-                    String genericClassType = storedProcedureMethod.getReturnTypeInfo().getGenericType().get();
+                    String genericClassType = genericType.get();
                     JVar list = method.body().decl(CodeModelUtil.getGenericList(model, genericClassType), "list");
                     method.body().assign(list, JExpr.cast(model.ref(List.class).narrow(model.ref(genericClassType)), execute.invoke("get").arg("#result-set-0")));
                     addInterceptorCallAfter(storedProcedureMethod, method, execute, interceptorIdObject);
                     JConditional condition = method.body()._if(list.invoke("size").eq(JExpr.lit(1)));
-                    condition._then()._return(model.directClass(Optional.class.getCanonicalName()).staticInvoke("of").arg(list.invoke("get").arg(JExpr.lit(0))));
+                    condition._then()._return(model.ref(Optional.class.getCanonicalName()).staticInvoke("of").arg(list.invoke("get").arg(JExpr.lit(0))));
                     condition = condition._elseif(list.invoke("size").eq(JExpr.lit(0)));
-                    condition._then()._return(model.directClass(Optional.class.getCanonicalName()).staticInvoke("empty"));
-                    condition._else()._throw(JExpr._new(model.directClass(MultipleObjectsReturned.class.getCanonicalName())));
+                    condition._then()._return(model.ref(Optional.class.getCanonicalName()).staticInvoke("empty"));
+                    condition._else()._throw(JExpr._new(model.ref(MultipleObjectsReturned.class.getCanonicalName())));
                 } else {
                     JVar map = method.body().decl(CodeModelUtil.getMapStringObject(model), "map");
                     method.body().assign(map, execute);
@@ -481,11 +482,11 @@ public class DtoGenerator extends AbstractGenerator {
                 if (storedProcedureMethod.useNullInsteadOfAnException()) {
                     condition = condition._elseif(list.invoke("size").eq(JExpr.lit(0)));
                     condition._then()._return(JExpr._null());
-                    condition._else()._throw(JExpr._new(model.directClass(MultipleObjectsReturned.class.getCanonicalName())));
+                    condition._else()._throw(JExpr._new(model.ref(MultipleObjectsReturned.class)));
                 } else {
                     condition = condition._elseif(list.invoke("size").eq(JExpr.lit(0)));
-                    condition._then()._throw(JExpr._new(model.directClass(ObjectDoesNotExist.class.getCanonicalName())));
-                    condition._else()._throw(JExpr._new(model.directClass(MultipleObjectsReturned.class.getCanonicalName())));
+                    condition._then()._throw(JExpr._new(model.ref(ObjectDoesNotExist.class)));
+                    condition._else()._throw(JExpr._new(model.ref(MultipleObjectsReturned.class)));
                 }
             }
         }

@@ -10,10 +10,8 @@ import at.rseiler.spbee.core.pojo.StoredProcedureMethod;
 import at.rseiler.spbee.core.pojo.StoredProcedureMethod.Builder;
 import at.rseiler.spbee.core.pojo.Variable;
 import at.rseiler.spbee.core.util.StringUtil;
-import com.sun.codemodel.JClassAlreadyExistsException;
 
 import javax.lang.model.element.*;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -43,7 +41,7 @@ import java.util.stream.Collectors;
 public class DtoCollector {
 
     private final Set<? extends Element> elements;
-    private List<DtoClass> dtoClasses = new ArrayList<>();
+    private final List<DtoClass> dtoClasses = new ArrayList<>();
 
     public DtoCollector(Set<? extends Element> elements) {
         this.elements = elements;
@@ -62,10 +60,8 @@ public class DtoCollector {
      * Collects all DTO classes and searches for all methods which are annotated with {@link at.rseiler.spbee.core.annotation.StoredProcedure}.
      *
      * @return itself
-     * @throws JClassAlreadyExistsException if a class is defined twice
-     * @throws IOException                  if the generated class can't be written
      */
-    public DtoCollector collect() throws JClassAlreadyExistsException, IOException {
+    public DtoCollector collect() {
         for (Element element : elements) {
             boolean hasDataSourceConstructor = element.getEnclosedElements().stream()
                     .anyMatch(hasDataSourceConstructor());

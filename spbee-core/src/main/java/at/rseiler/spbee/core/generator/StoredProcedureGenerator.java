@@ -86,7 +86,7 @@ public class StoredProcedureGenerator extends AbstractGenerator {
         JPackage jPackage = model._package(spPackage);
         JDefinedClass aClass = jPackage._class(className);
         CodeModelUtil.annotateGenerated(aClass);
-        aClass._extends(model.directClass(SPRING_STORED_PROCEDURE));
+        aClass._extends(model.ref(SPRING_STORED_PROCEDURE));
         return aClass;
     }
 
@@ -120,9 +120,9 @@ public class StoredProcedureGenerator extends AbstractGenerator {
     private void declareSqlParameters(JCodeModel model, StoredProcedureMethod storedProcedureMethod, JBlock body) {
         for (Variable variable : storedProcedureMethod.getArguments()) {
             String sqlType = getSqlParameter(variable.getTypeInfo().getGenericTypeOrType());
-            JInvocation sqlParameter = JExpr._new(model.directClass(SPRING_SQL_PARAMETER));
+            JInvocation sqlParameter = JExpr._new(model.ref(SPRING_SQL_PARAMETER));
             sqlParameter.arg(variable.getName());
-            sqlParameter.arg(model.directClass(Types.class.getCanonicalName()).staticRef(sqlType));
+            sqlParameter.arg(model.ref(Types.class.getCanonicalName()).staticRef(sqlType));
             body.add(JExpr.invoke("declareParameter").arg(sqlParameter));
         }
     }
@@ -158,8 +158,8 @@ public class StoredProcedureGenerator extends AbstractGenerator {
 
         for (int i = 0; i < variables.size(); i++) {
             ResultSetVariable variable = variables.get(i);
-            JInvocation newMapper = JExpr._new(model.directClass(variable.getRowMapper()));
-            JInvocation sqlReturnResultSet = JExpr._new(model.directClass(SPRING_SQL_RETURN_RESULT_SET)).arg("#result-set-" + i).arg(newMapper);
+            JInvocation newMapper = JExpr._new(model.ref(variable.getRowMapper()));
+            JInvocation sqlReturnResultSet = JExpr._new(model.ref(SPRING_SQL_RETURN_RESULT_SET)).arg("#result-set-" + i).arg(newMapper);
             body.add(JExpr.invoke("declareParameter").arg(sqlReturnResultSet));
         }
     }
@@ -173,8 +173,8 @@ public class StoredProcedureGenerator extends AbstractGenerator {
      * </pre>
      */
     private void singleResultSet(JCodeModel model, JBlock body, StoredProcedureMethod storedProcedureMethod) {
-        JInvocation newMapper = JExpr._new(model.directClass(storedProcedureMethod.getQualifiedRowMapperClass()));
-        JInvocation sqlReturnResultSet = JExpr._new(model.directClass(SPRING_SQL_RETURN_RESULT_SET)).arg("#result-set-0").arg(newMapper);
+        JInvocation newMapper = JExpr._new(model.ref(storedProcedureMethod.getQualifiedRowMapperClass()));
+        JInvocation sqlReturnResultSet = JExpr._new(model.ref(SPRING_SQL_RETURN_RESULT_SET)).arg("#result-set-0").arg(newMapper);
         body.add(JExpr.invoke("declareParameter").arg(sqlReturnResultSet));
     }
 
@@ -193,13 +193,13 @@ public class StoredProcedureGenerator extends AbstractGenerator {
         JVar connection = null;
 
         if (hasArrayType) {
-            connection = block.decl(model.directClass(Connection.class.getCanonicalName()), "conn");
+            connection = block.decl(model.ref(Connection.class.getCanonicalName()), "conn");
             block.assign(connection, JExpr._null());
 
             JTryBlock tryBlock = method.body()._try();
             // catch - rethrow exception
-            JCatchBlock catchBlock = tryBlock._catch(model.directClass(SQLException.class.getCanonicalName()));
-            JInvocation exception = JExpr._new(model.directClass("org.springframework.jdbc.UncategorizedSQLException"))
+            JCatchBlock catchBlock = tryBlock._catch(model.ref(SQLException.class.getCanonicalName()));
+            JInvocation exception = JExpr._new(model.ref("org.springframework.jdbc.UncategorizedSQLException"))
                     .arg(JExpr._this().invoke("getClass").invoke("getCanonicalName"))
                     .arg(JExpr._this().invoke("getSql"))
                     .arg(catchBlock.param("e"));
@@ -207,8 +207,8 @@ public class StoredProcedureGenerator extends AbstractGenerator {
             // finally - closes the connection
             JTryBlock connCloseTryBlock = tryBlock._finally()._if(connection.ne(JExpr._null()))._then()._try();
             connCloseTryBlock.body().add(connection.invoke("close"));
-            JCatchBlock closeConnCatchBlock = connCloseTryBlock._catch(model.directClass(SQLException.class.getCanonicalName()));
-            JInvocation runtimeException = JExpr._new(model.directClass(RuntimeException.class.getCanonicalName()))
+            JCatchBlock closeConnCatchBlock = connCloseTryBlock._catch(model.ref(SQLException.class.getCanonicalName()));
+            JInvocation runtimeException = JExpr._new(model.ref(RuntimeException.class.getCanonicalName()))
                     .arg(JExpr.lit("Failed to close connection"))
                     .arg(closeConnCatchBlock.param("e"));
             closeConnCatchBlock.body()._throw(runtimeException);
@@ -219,7 +219,7 @@ public class StoredProcedureGenerator extends AbstractGenerator {
         }
 
         for (Variable variable : storedProcedureMethod.getArguments()) {
-            JVar param = method.param(model.directClass(variable.getTypeInfo().asString()), variable.getName());
+            JVar param = method.param(model.ref(variable.getTypeInfo().asString()), variable.getName());
 
             if (hasArrayType && isArrayType(variable)) {
                 superExecute.arg(connection.invoke("createArrayOf").arg(getArrayType(variable.getTypeInfo().asString())).arg(param));
@@ -241,7 +241,7 @@ public class StoredProcedureGenerator extends AbstractGenerator {
      * @param type the type
      * @return the parameter name
      */
-    public static String getSqlParameter(String type) {
+    private static String getSqlParameter(String type) {
         switch (type) {
             case "boolean":
             case "java.lang.Boolean":

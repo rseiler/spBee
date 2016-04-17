@@ -41,7 +41,7 @@ public final class CodeModelUtil {
      * @return the Map&lt;String, Object&gt; JClass
      */
     public static JClass getMapStringObject(JCodeModel model) {
-        return model.directClass(Map.class.getCanonicalName()).narrow(String.class, Object.class);
+        return model.ref(Map.class).narrow(String.class, Object.class);
     }
 
     /**
@@ -52,7 +52,7 @@ public final class CodeModelUtil {
      * @return the generic List JClass
      */
     public static JClass getGenericList(JCodeModel model, String genericClassType) {
-        return model.directClass(List.class.getCanonicalName()).narrow(model.directClass(genericClassType));
+        return model.ref(List.class).narrow(model.ref(genericClassType));
     }
 
     /**
@@ -64,7 +64,7 @@ public final class CodeModelUtil {
      */
 
     public static JClass getGenericOptional(JCodeModel model, String genericClassType) {
-        return model.directClass(Optional.class.getCanonicalName()).narrow(model.directClass(genericClassType));
+        return model.ref(Optional.class).narrow(model.ref(genericClassType));
     }
 
 }

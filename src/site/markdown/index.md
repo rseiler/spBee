@@ -52,7 +52,7 @@ In Maven you need to add spBee as dependency and define spBee`s annotation proce
         &lt;plugin&gt;
             &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
             &lt;artifactId&gt;maven-compiler-plugin&lt;/artifactId&gt;
-            &lt;version&gt;3.2&lt;/version&gt;
+            &lt;version&gt;3.5.1&lt;/version&gt;
             &lt;configuration&gt;
                 &lt;source&gt;1.8&lt;/source&gt;
                 &lt;target&gt;1.8&lt;/target&gt;
@@ -69,8 +69,8 @@ In Maven you need to add spBee as dependency and define spBee`s annotation proce
 &lt;dependencies&gt;
     &lt;dependency&gt;
         &lt;groupId&gt;at.rseiler.spbee&lt;/groupId&gt;
-        &lt;artifactId&gt;core&lt;/artifactId&gt;
-        &lt;version&gt;1.0&lt;/version&gt;
+        &lt;artifactId&gt;spbee-core&lt;/artifactId&gt;
+        &lt;version&gt;1.1&lt;/version&gt;
     &lt;/dependency&gt;
     &lt;dependency&gt;
         &lt;groupId&gt;org.springframework&lt;/groupId&gt;
@@ -419,16 +419,16 @@ More examples can be found in the ```spBee#demo``` module.
 public class UserPermissionsResultSet {
 
     @RowMapper(SimpleUserMapper.class)
-    private final Optional&lt;User&gt; user;
+    private final User user;
     private final List&lt;Permission&gt; permissions;
 
-    public UserPermissionsResultSet(Optional&lt;User&gt; user, List&lt;Permission&gt; permissions) {
+    public UserPermissionsResultSet(User, List&lt;Permission&gt; permissions) {
         this.user = user;
         this.permissions = permissions;
     }
 
     public Optional&lt;User&gt; getUser() {
-        if (user.isPresent()) {
+        if (user != null) {
             return Optional.of(new Builder(user.get()).permissions(permissions).build());
         }
         return Optional.empty();
@@ -522,35 +522,7 @@ public class UserPermissionsResultSet {
     private final User user;
     private final List&lt;Permission&gt; permissions;
 
-    public UserPermissionsResultSet(Optional&lt;User&gt; user, List&lt;Permission&gt; permissions) {
-        this.user = user;
-        this.permissions = permissions;
-    }
-}
-
-</pre>
-</div>
-
-### Return ```Optional.empty()``` instead of an ```ObjectDoesNotExist``` runtime exception <a name="example-return-null"></a>
-
-<div class="source">
-<pre class="prettyprint lang-java">
-
-@Dao
-public interface UserDao {
-
-    @StoredProcedure("sp_get_simple_user")
-    Optional&lt;User&gt; getUser();
-
-}
-
-@ResultSet
-public class UserPermissionsResultSet {
-
-    private final Optional&lt;User&gt; user;
-    private final List&lt;Permission&gt; permissions;
-
-    public UserPermissionsResultSet(Optional&lt;User&gt; user, List&lt;Permission&gt; permissions) {
+    public UserPermissionsResultSet(User user, List&lt;Permission&gt; permissions) {
         this.user = user;
         this.permissions = permissions;
     }

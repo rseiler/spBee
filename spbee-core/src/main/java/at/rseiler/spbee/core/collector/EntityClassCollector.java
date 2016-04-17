@@ -125,7 +125,7 @@ public class EntityClassCollector {
      */
     private boolean hasMappingConstructor(Element entityClassElement) {
         return entityClassElement.getEnclosedElements().stream()
-                .anyMatch(element -> isMappingConstructor(element));
+                .anyMatch(this::isMappingConstructor);
     }
 
     /**

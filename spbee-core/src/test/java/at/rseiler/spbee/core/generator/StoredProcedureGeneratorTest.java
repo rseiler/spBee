@@ -78,9 +78,9 @@ public class StoredProcedureGeneratorTest {
         String javaCode = generateJavaCode(dtoClass, resultSetClassMap, entityNames);
 
         assertContains(javaCode,
-                "declareParameter(new org.springframework.jdbc.core.SqlParameter(\"id\", java.sql.Types.INTEGER));",
-                "declareParameter(new org.springframework.jdbc.core.SqlParameter(\"name\", java.sql.Types.VARCHAR));",
-                "execute(int id, java.lang.String name)",
+                "declareParameter(new org.springframework.jdbc.core.SqlParameter(\"id\", Types.INTEGER));",
+                "declareParameter(new org.springframework.jdbc.core.SqlParameter(\"name\", Types.VARCHAR));",
+                "execute(int id, String name)",
                 "return super.execute(id, name);"
         );
     }
@@ -218,12 +218,12 @@ public class StoredProcedureGeneratorTest {
         String javaCode = generateJavaCode(dtoClass, resultSetClassMap, entityNames);
 
         assertContains(javaCode,
-                "declareParameter(new org.springframework.jdbc.core.SqlReturnResultSet(\"#result-set-0\", new at.rseiler.spbee.core.generator.SpecialMapper()));",
-                "declareParameter(new org.springframework.jdbc.core.SqlReturnResultSet(\"#result-set-1\", new at.rseiler.spbee.core.generator.SpecialMapper()));"
+                "declareParameter(new org.springframework.jdbc.core.SqlReturnResultSet(\"#result-set-0\", new SpecialMapper()));",
+                "declareParameter(new org.springframework.jdbc.core.SqlReturnResultSet(\"#result-set-1\", new SpecialMapper()));"
         );
     }
 
-    private String generateJavaCode(DtoClass dtoClass, Map<String, ResultSetClass> resultSetClassMap, Set<String> entityNames) throws IOException, JClassAlreadyExistsException, ClassNotFoundException {
+    private String generateJavaCode(DtoClass dtoClass, Map<String, ResultSetClass> resultSetClassMap, Set<String> entityNames) throws IOException, JClassAlreadyExistsException {
         ProcessingEnvironment processingEnv = mock(ProcessingEnvironment.class);
         Filer filer = mock(Filer.class);
         JavaFileObject javaFileObject = mock(JavaFileObject.class);
@@ -234,7 +234,7 @@ public class StoredProcedureGeneratorTest {
         when(javaFileObject.openWriter()).thenReturn(stringWriter);
 
         StoredProcedureGenerator storedProcedureGenerator = new StoredProcedureGenerator(processingEnv, resultSetClassMap);
-        List<DtoClass> dtoClasses = Arrays.asList(dtoClass);
+        List<DtoClass> dtoClasses = Collections.singletonList(dtoClass);
         storedProcedureGenerator.generateStoredProcedureClasses(dtoClasses);
 
         return stringWriter.toString();

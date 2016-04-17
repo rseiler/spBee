@@ -5,18 +5,17 @@
     <parent>
         <artifactId>spbee</artifactId>
         <groupId>at.rseiler.spbee</groupId>
-        <version>1.1-SNAPSHOT</version>
+        <version>1.1</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>spbee-model-gen</artifactId>
+    <properties>
+        <!-- multi project config -->
+        <main.basedir>${project.parent.basedir}</main.basedir>
+    </properties>
 
     <dependencies>
-        <dependency>
-            <groupId>at.rseiler.spbee</groupId>
-            <artifactId>spbee-core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
         <dependency>
             <groupId>at.rseiler.spbee</groupId>
             <artifactId>spbee-core</artifactId>

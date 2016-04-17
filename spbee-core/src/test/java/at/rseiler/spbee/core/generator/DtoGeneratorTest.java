@@ -102,9 +102,9 @@ public class DtoGeneratorTest {
         String javaCode = generateJavaCode(dtoClass, resultSetClassMap);
 
         assertContains(javaCode,
-                "public java.lang.String getSomething()",
-                "java.util.List<java.lang.String> list;",
-                "list = ((java.util.List<java.lang.String> ) spGetSomethingWithSpecialMapper.execute().get(\"#result-set-0\"));",
+                "public String getSomething()",
+                "List<String> list;",
+                "list = ((List<String> ) spGetSomethingWithSpecialMapper.execute().get(\"#result-set-0\"));",
                 "if (list.size() == 1)",
                 "return list.get(0);",
                 "if (list.size() == 0)",
@@ -132,9 +132,9 @@ public class DtoGeneratorTest {
         String javaCode = generateJavaCode(dtoClass, resultSetClassMap);
 
         assertContains(javaCode,
-                "public java.lang.String getSomething()",
-                "java.util.List<java.lang.String> list;",
-                "list = ((java.util.List<java.lang.String> ) spGetSomethingWithSpecialMapper.execute().get(\"#result-set-0\"));",
+                "public String getSomething()",
+                "List<String> list;",
+                "list = ((List<String> ) spGetSomethingWithSpecialMapper.execute().get(\"#result-set-0\"));",
                 "if (list.size() == 1)",
                 "return list.get(0);",
                 "if (list.size() == 0)",
@@ -162,13 +162,13 @@ public class DtoGeneratorTest {
         String javaCode = generateJavaCode(dtoClass, resultSetClassMap);
 
         assertContains(javaCode,
-                "public java.util.Optional<java.lang.String> getSomething()",
-                "java.util.List<java.lang.String> list;",
-                "list = ((java.util.List<java.lang.String> ) spGetSomethingWithSpecialMapper.execute().get(\"#result-set-0\"));",
+                "public Optional<String> getSomething()",
+                "List<String> list;",
+                "list = ((List<String> ) spGetSomethingWithSpecialMapper.execute().get(\"#result-set-0\"));",
                 "if (list.size() == 1)",
-                "return java.util.Optional.of(list.get(0));",
+                "return Optional.of(list.get(0));",
                 "if (list.size() == 0)",
-                "return java.util.Optional.empty();",
+                "return Optional.empty();",
                 "throw new MultipleObjectsReturned();"
         );
     }
@@ -198,10 +198,10 @@ public class DtoGeneratorTest {
         String javaCode = generateJavaCode(dtoClass, resultSetClassMap);
 
         assertContains(javaCode,
-                "public List<java.lang.String> getSomething(int id, java.lang.String name)",
-                "Map<java.lang.String, Object> map;",
+                "public List<String> getSomething(int id, String name)",
+                "Map<String, Object> map;",
                 "map = spGetSomethingWithSpecialMapper.execute(id, name);",
-                "return ((List<java.lang.String> ) map.get(\"#result-set-0\"));"
+                "return ((List<String> ) map.get(\"#result-set-0\"));"
         );
     }
 
@@ -273,9 +273,9 @@ public class DtoGeneratorTest {
         String javaCode = generateJavaCode(dtoClass, resultSetClassMap, config);
 
         assertContains(javaCode,
-                "java.lang.Object interceptorIdObject;",
+                "Object interceptorIdObject;",
                 "interceptorIdObject = at.rseiler.spbee.test.Interceptor.before(\"sp_get_something\");",
-                "Map<String, java.lang.Object> map;",
+                "Map<String, Object> map;",
                 "map = spGetSomething.execute();",
                 "at.rseiler.spbee.test.Interceptor.after(interceptorIdObject, \"sp_get_something\");",
                 "return ((List<String> ) map.get(\"#result-set-0\"));"
@@ -304,8 +304,8 @@ public class DtoGeneratorTest {
         assertContains(javaCode,
                 "Object interceptorIdObject;",
                 "interceptorIdObject = at.rseiler.spbee.test.Interceptor.before(\"sp_get_something\");",
-                "java.util.List<java.lang.String> list;",
-                "list = ((java.util.List<java.lang.String> ) spGetSomething.execute().get(\"#result-set-0\"));",
+                "List<String> list;",
+                "list = ((List<String> ) spGetSomething.execute().get(\"#result-set-0\"));",
                 "at.rseiler.spbee.test.Interceptor.after(interceptorIdObject, \"sp_get_something\");"
         );
     }
@@ -332,8 +332,8 @@ public class DtoGeneratorTest {
         assertContains(javaCode,
                 "Object interceptorIdObject;",
                 "interceptorIdObject = at.rseiler.spbee.test.Interceptor.before(\"sp_get_something\");",
-                "java.util.List<java.lang.String> list;",
-                "list = ((java.util.List<java.lang.String> ) spGetSomething.execute().get(\"#result-set-0\"));",
+                "List<String> list;",
+                "list = ((List<String> ) spGetSomething.execute().get(\"#result-set-0\"));",
                 "at.rseiler.spbee.test.Interceptor.after(interceptorIdObject, \"sp_get_something\");"
         );
     }
@@ -362,16 +362,16 @@ public class DtoGeneratorTest {
         assertContains(javaCode,
                 "Map<String, Object> map;",
                 "map = spGetSomethingWithSpecialMapper.execute();",
-                "java.util.List<at.rseiler.spbee.test.entity.Test1Entity> list0;",
-                "list0 = ((java.util.List<at.rseiler.spbee.test.entity.Test1Entity> ) map.get(\"#result-set-0\"));",
-                "at.rseiler.spbee.test.entity.Test1Entity obj0;",
+                "List<at.rseiler.spbee.test.entity.Test1Entity> list0;",
+                "list0 = ((List<at.rseiler.spbee.test.entity.Test1Entity> ) map.get(\"#result-set-0\"));",
+                "Test1Entity obj0;",
                 "if (list0 .size() == 1)",
                 "obj0 = list0 .get(0);",
                 "if (list0 .size() == 0)",
                 "throw new ObjectDoesNotExist();",
                 "throw new MultipleObjectsReturned();",
-                "java.util.List<Test2Entity> list1;",
-                "list1 = ((java.util.List<Test2Entity> ) map.get(\"#result-set-1\"));",
+                "List<Test2Entity> list1;",
+                "list1 = ((List<Test2Entity> ) map.get(\"#result-set-1\"));",
                 "return new MultiResultSet(obj0, list1);"
         );
     }
@@ -403,35 +403,6 @@ public class DtoGeneratorTest {
     }
 
     @Test
-    public void testGenerateDtoClassesWithMultipleResultSetsAndOptional() throws Exception {
-        Map<String, ResultSetClass> resultSetClassMap = new HashMap<>();
-        ArrayList<ResultSetVariable> resultSetVariables = new ArrayList<>();
-        resultSetVariables.add(new ResultSetVariable("rs1", "java.util.Optional<at.rseiler.spbee.test.entity.Test1Entity>", null, null, null));
-        resultSetVariables.add(new ResultSetVariable("rs2", "java.util.List<at.rseiler.spbee.test.entity.Test2Entity>", null, null, null));
-        resultSetClassMap.put("MultiResultSet", new ResultSetClass("MultiResultSet", resultSetVariables));
-        DtoClass dtoClass = new DtoClass("at.rseiler.spbee.test.DtoTest", true, false);
-
-        dtoClass.add(new StoredProcedureMethod.Builder()
-                        .dtoClassName("at.rseiler.spbee.test.DtoTest")
-                        .methodName("getSomething")
-                        .returnTypeInfo(new TypeInfo("MultiResultSet"))
-                        .storedProcedure(getStoredProcedure("sp_get_something"))
-                        .rowMapper(getRowMapper(SpecialMapper.class))
-                        .mappingConstructor(null)
-                        .build()
-        );
-
-        String javaCode = generateJavaCode(dtoClass, resultSetClassMap);
-
-        assertContains(javaCode,
-                "java.util.Optional obj0;",
-                "obj0 = java.util.Optional.of(list0 .get(0));",
-                "obj0 = java.util.Optional.empty();",
-                "return new MultiResultSet(obj0, list1);"
-        );
-    }
-
-    @Test
     public void testGenerateDtoClassesWithMultipleResultSetsAndInterceptor() throws Exception {
         Map<String, ResultSetClass> resultSetClassMap = new HashMap<>();
         ArrayList<ResultSetVariable> resultSetVariables = new ArrayList<>();
@@ -455,9 +426,9 @@ public class DtoGeneratorTest {
         String javaCode = generateJavaCode(dtoClass, resultSetClassMap, config);
 
         assertContains(javaCode,
-                "java.lang.Object interceptorIdObject;",
+                "Object interceptorIdObject;",
                 "interceptorIdObject = at.rseiler.spbee.test.Interceptor.before(\"sp_get_something\");",
-                "Map<String, java.lang.Object> map;",
+                "Map<String, Object> map;",
                 "map = spGetSomethingWithSpecialMapper.execute();",
                 "at.rseiler.spbee.test.Interceptor.after(interceptorIdObject, \"sp_get_something\");"
         );
@@ -488,7 +459,7 @@ public class DtoGeneratorTest {
                 rollbackElement2
         );
 
-        List<AnnotationInfo> annotationInfos = Arrays.asList(
+        List<AnnotationInfo> annotationInfos = Collections.singletonList(
                 new AnnotationInfo("org.springframework.transaction.annotation.Transactional")
                         .addAnnotationValueInfo(ElementConverter.convert("isolation", isolationElement, "org.springframework.transaction.annotation.Isolation.READ_COMMITTED"))
                         .addAnnotationValueInfo(ElementConverter.convert("rollbackFor", rollbackForList, "java.util.List"))
@@ -551,11 +522,11 @@ public class DtoGeneratorTest {
                 "private final SpGetSomething spGetSomething;",
                 "spGetSomething = new SpGetSomething(dataSource);",
                 "public List<String> getSomething1()",
-                "java.util.Map<String, Object> map;",
+                "Map<String, Object> map;",
                 "map = spGetSomething.execute();",
                 "return ((List<String> ) map.get(\"#result-set-0\"));",
                 "public List<String> getSomething2()",
-                "java.util.Map<String, Object> map;",
+                "Map<String, Object> map;",
                 "map = spGetSomething.execute();",
                 "return ((List<String> ) map.get(\"#result-set-0\"));"
         );
@@ -564,8 +535,6 @@ public class DtoGeneratorTest {
     @Test
     public void testGenerateDuoClassesSPTwiceWithDifferentUsage() throws Exception {
         Map<String, ResultSetClass> resultSetClassMap = new HashMap<>();
-        Set<String> mapperNames = new HashSet<>();
-        mapperNames.add("at.rseiler.spbee.test.mapper.TestEntitySpGetSomethingMapper");
         DtoClass dtoClass = new DtoClass("at.rseiler.spbee.test.DtoTest", true, false);
 
         dtoClass.add(new StoredProcedureMethod.Builder()
@@ -594,11 +563,11 @@ public class DtoGeneratorTest {
                 "private final SpGetSomethingWithSpGetSomething spGetSomethingWithSpGetSomething;",
                 "spGetSomething = new SpGetSomething(dataSource);",
                 "public List<at.rseiler.spbee.test.TestEntity> getSomething1()",
-                "java.util.Map<String, Object> map;",
+                "Map<String, Object> map;",
                 "map = spGetSomething.execute();",
                 "return ((List<at.rseiler.spbee.test.TestEntity> ) map.get(\"#result-set-0\"));",
                 "public List<at.rseiler.spbee.test.TestEntity> getSomething2()",
-                "java.util.Map<String, Object> map;",
+                "Map<String, Object> map;",
                 "map = spGetSomething.execute();",
                 "return ((List<at.rseiler.spbee.test.TestEntity> ) map.get(\"#result-set-0\"));"
         );
@@ -608,7 +577,7 @@ public class DtoGeneratorTest {
         return generateJavaCode(dtoClass,resultSetClassMap, new Properties());
     }
 
-    private String generateJavaCode(DtoClass dtoClass, Map<String, ResultSetClass> resultSetClassMap, Properties config) throws IOException, JClassAlreadyExistsException, ClassNotFoundException {
+    private String generateJavaCode(DtoClass dtoClass, Map<String, ResultSetClass> resultSetClassMap, Properties config) throws IOException, JClassAlreadyExistsException {
         ProcessingEnvironment processingEnv = mock(ProcessingEnvironment.class);
         Filer filer = mock(Filer.class);
         JavaFileObject javaFileObject = mock(JavaFileObject.class);
@@ -619,7 +588,7 @@ public class DtoGeneratorTest {
         when(javaFileObject.openWriter()).thenReturn(stringWriter);
 
         DtoGenerator dtoGenerator = new DtoGenerator(processingEnv, config, resultSetClassMap);
-        List<DtoClass> dtoClasses = Arrays.asList(dtoClass);
+        List<DtoClass> dtoClasses = Collections.singletonList(dtoClass);
         dtoGenerator.generateDtoClasses(dtoClasses);
 
         return stringWriter.toString();

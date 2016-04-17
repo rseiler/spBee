@@ -56,7 +56,7 @@ public class MapperGenerator extends AbstractGenerator {
         String qualifiedClassName = mapperClass.getQualifiedMapperClassName();
 
         JCodeModel model = new JCodeModel();
-        JClass typeJClass = model.directClass(type);
+        JClass typeJClass = model.ref(type);
         JDefinedClass mapperJDefinedClass = createClass(model, qualifiedClassName, typeJClass);
         createMapRow(model, mapperJDefinedClass, typeJClass, mapperClass.getVariables());
 
@@ -76,7 +76,7 @@ public class MapperGenerator extends AbstractGenerator {
         JPackage jPackage = model._package(aPackage);
         JDefinedClass aClass = jPackage._class(className);
         CodeModelUtil.annotateGenerated(aClass);
-        aClass._implements(model.directClass(SPRING_ROW_MAPPER).narrow(typeJClass));
+        aClass._implements(model.ref(SPRING_ROW_MAPPER).narrow(typeJClass));
 
         return aClass;
     }
@@ -92,7 +92,7 @@ public class MapperGenerator extends AbstractGenerator {
     private void createMapRow(JCodeModel model, JDefinedClass mapperClass, JClass type, List<Variable> mapperVariables) throws ClassNotFoundException {
         JMethod method = mapperClass.method(JMod.PUBLIC, type, "mapRow");
         method._throws(SQLException.class);
-        method.param(model.directClass(ResultSet.class.getCanonicalName()), "rs");
+        method.param(model.ref(ResultSet.class.getCanonicalName()), "rs");
         method.param(model.parseType("int"), "rowNum");
         JInvocation invocation = JExpr._new(type);
 

@@ -6,8 +6,8 @@ import at.rseiler.spbee.core.pojo.AnnotationValueInfo.Kind;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.Element;
 import javax.lang.model.type.DeclaredType;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Helper class to convert an annotation element.
@@ -35,11 +35,9 @@ public final class ElementConverter {
         } else if (value instanceof Element) {
             return new AnnotationValueInfo(simpleName, value.toString(), type, Kind.ELEMENT);
         } else if (value instanceof List) {
-            List<AnnotationValueInfo> list = new ArrayList<>();
-
-            for (AnnotationValue annotationValueObj : (List<AnnotationValue>) value) {
-                list.add(convert("", annotationValueObj.getValue(), annotationValueObj.toString()));
-            }
+            List<AnnotationValueInfo> list = ((List<AnnotationValue>) value).stream()
+                    .map(annotationValueObj -> convert("", annotationValueObj.getValue(), annotationValueObj.toString()))
+                    .collect(Collectors.toList());
 
             return new AnnotationValueInfo(simpleName, list, type, Kind.LIST);
         } else {

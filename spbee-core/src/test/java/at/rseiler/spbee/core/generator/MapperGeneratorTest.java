@@ -11,7 +11,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import static at.rseiler.spbee.core.generator.GeneratorUtil.assertContains;
@@ -23,7 +23,7 @@ public class MapperGeneratorTest {
     private ProcessingEnvironment processingEnv;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         processingEnv = mock(ProcessingEnvironment.class);
     }
 
@@ -70,7 +70,7 @@ public class MapperGeneratorTest {
         when(javaFileObject.openWriter()).thenReturn(stringWriter);
 
         MapperGenerator mapperGenerator = new MapperGenerator(processingEnv);
-        List<MapperClass> mapperClasses = Arrays.asList(mapperClass);
+        List<MapperClass> mapperClasses = Collections.singletonList(mapperClass);
         mapperGenerator.generateMappers(mapperClasses);
 
         return stringWriter.toString();

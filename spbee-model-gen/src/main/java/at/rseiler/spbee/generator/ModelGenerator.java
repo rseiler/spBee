@@ -35,28 +35,27 @@ public class ModelGenerator {
     }
 
     public void execute() {
-        try {
+        try (Connection connection = dataSource.getConnection(); CallableStatement statement = connection.prepareCall("{call " + spName + " (" + spArgs + ")}")) {
             List<ColumnDataList> columnDataLists = new ArrayList<>();
-            try (Connection connection = dataSource.getConnection(); CallableStatement statement = connection.prepareCall("{call " + spName + " (" + spArgs + ")}")) {
-                ResultSet resultSet = statement.executeQuery();
 
+            try (ResultSet resultSet = statement.executeQuery()) {
                 do {
-                    ResultSet rs = statement.getResultSet();
+                    try (ResultSet rs = statement.getResultSet()) {
 
-                    if (rs != null) {
-                        if (rs.next()) {
-                            handleResultSetMetaData(columnDataLists, rs);
+                        if (rs != null) {
+                            if (rs.next()) {
+                                handleResultSetMetaData(columnDataLists, rs);
+                            }
+                        } else if (resultSet.next()) {
+                            handleResultSetMetaData(columnDataLists, resultSet);
                         }
-                        System.out.println();
-                    } else if (resultSet.next()) {
-                        handleResultSetMetaData(columnDataLists, resultSet);
                     }
                 } while (statement.getMoreResults());
             }
 
             generateSpBeeModelClasses(spName, columnDataLists);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (SQLException | JClassAlreadyExistsException | IOException e) {
+            throw new RuntimeException("Error", e);
         }
     }
 
@@ -177,16 +176,16 @@ public class ModelGenerator {
         private boolean hasSeveralRows;
         private List<ColumnData> columnDataList;
 
-        public ColumnDataList(boolean hasSeveralRows, List<ColumnData> columnDataList) {
+        ColumnDataList(boolean hasSeveralRows, List<ColumnData> columnDataList) {
             this.hasSeveralRows = hasSeveralRows;
             this.columnDataList = columnDataList;
         }
 
-        public boolean hasSeveralRows() {
+        boolean hasSeveralRows() {
             return hasSeveralRows;
         }
 
-        public List<ColumnData> getColumnDataList() {
+        List<ColumnData> getColumnDataList() {
             return columnDataList;
         }
 
@@ -203,16 +202,16 @@ public class ModelGenerator {
         private int type;
         private String name;
 
-        public ColumnData(int type, String name) {
+        ColumnData(int type, String name) {
             this.type = type;
             this.name = name;
         }
 
-        public int getType() {
+        int getType() {
             return type;
         }
 
-        public String getName() {
+        String getName() {
             return name;
         }
 

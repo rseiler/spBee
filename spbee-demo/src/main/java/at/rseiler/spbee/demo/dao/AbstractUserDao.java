@@ -24,16 +24,17 @@ import java.util.Optional;
 @Dao
 public abstract class AbstractUserDao {
 
+
     private static final Logger LOG = Logger.getLogger(AbstractUserDao.class);
 
     private final DataSource dataSource;
 
-    AbstractUserDao(DataSource dataSource) {
+    public AbstractUserDao(DataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     @StoredProcedure(SpName.GET_USER_WITH_PERMISSIONS)
-    abstract UserPermissionsResultSet getUserWithPermissionsInternal(int id);
+    public abstract UserPermissionsResultSet getUserWithPermissionsInternal(int id);
 
     public Optional<User> getUserWithPermissions(int id) {
         return getUserWithPermissionsInternal(id).getUser();

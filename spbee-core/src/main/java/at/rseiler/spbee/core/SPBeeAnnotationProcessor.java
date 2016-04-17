@@ -48,8 +48,8 @@ import java.util.*;
 public class SPBeeAnnotationProcessor extends AbstractProcessor {
 
     public static final String SPBEE_ANNOTATION_PREFIX = "at.rseiler.spbee.core.annotation";
-    public static final String DATA_FILE = "at/rseiler/spbee/context.data";
-    public static final String CONFIG = "spbee.properties";
+    private static final String DATA_FILE = "at/rseiler/spbee/context.data";
+    private static final String CONFIG = "spbee.properties";
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
@@ -126,16 +126,12 @@ public class SPBeeAnnotationProcessor extends AbstractProcessor {
         for (TypeElement typeElement : annotations) {
             Set<? extends Element> elements = roundEnvironment.getElementsAnnotatedWith(typeElement);
 
-            try {
-                if (typeElement.toString().equals(ResultSet.class.getCanonicalName())) {
-                    resultSetsMap = new ResultSetCollector(elements).collect().getResultSetMap();
-                } else if (typeElement.toString().equals(Entity.class.getCanonicalName())) {
-                    mapperClasses = new EntityClassCollector(processingEnv, elements).collect().getMapperClasses();
-                } else if (typeElement.toString().equals(Dao.class.getCanonicalName())) {
-                    dtoClasses = new DtoCollector(elements).collect().getDtoClasses();
-                }
-            } catch (JClassAlreadyExistsException | IOException e) {
-                processingEnv.getMessager().printMessage(Kind.ERROR, e.toString() + getStackTrace(e));
+            if (typeElement.toString().equals(ResultSet.class.getCanonicalName())) {
+                resultSetsMap = new ResultSetCollector(elements).collect().getResultSetMap();
+            } else if (typeElement.toString().equals(Entity.class.getCanonicalName())) {
+                mapperClasses = new EntityClassCollector(processingEnv, elements).collect().getMapperClasses();
+            } else if (typeElement.toString().equals(Dao.class.getCanonicalName())) {
+                dtoClasses = new DtoCollector(elements).collect().getDtoClasses();
             }
         }
 
@@ -184,7 +180,7 @@ public class SPBeeAnnotationProcessor extends AbstractProcessor {
      * @param exception the exception which should be transformed
      * @return the stack trace of the exception
      */
-    private static String getStackTrace(Exception exception) {
+    private String getStackTrace(Exception exception) {
         StringWriter sw = new StringWriter();
         try {
             exception.printStackTrace(new PrintWriter(sw));
@@ -192,7 +188,8 @@ public class SPBeeAnnotationProcessor extends AbstractProcessor {
         } finally {
             try {
                 sw.close();
-            } catch (IOException ignore) {
+            } catch (IOException e) {
+                processingEnv.getMessager().printMessage(Kind.ERROR, "Failed to print stack-trace.");
             }
         }
     }
