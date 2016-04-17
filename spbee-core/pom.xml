@@ -5,12 +5,12 @@
     <parent>
         <groupId>at.rseiler.spbee</groupId>
         <artifactId>spbee</artifactId>
-        <version>1.1</version>
+        <version>1.1-SNAPSHOT</version>
     </parent>
 
     <artifactId>spbee-core</artifactId>
     <packaging>jar</packaging>
-    <version>1.1</version>
+    <version>1.1-SNAPSHOT</version>
 
     <name>core</name>
     <description>
