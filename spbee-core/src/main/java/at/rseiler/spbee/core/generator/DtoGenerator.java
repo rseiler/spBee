@@ -338,26 +338,10 @@ public class DtoGenerator extends AbstractGenerator {
                 Optional<String> genericType = variable.getTypeInfo().getGenericType();
 
                 if (genericType.isPresent()) {
-                    if (Optional.class.getCanonicalName().equals(variable.getTypeInfo().getType())) {
-                        JClass varType = CodeModelUtil.getGenericList(model,  genericType.get());
-                        JVar list = method.body().decl(varType, "list" + i);
-                        method.body().assign(list, JExpr.cast(varType, map.invoke("get").arg("#result-set-" + i)));
-
-                        JVar obj = method.body().decl(model.ref(variable.getTypeInfo().getType()), "obj" + i);
-                        JConditional condition = method.body()._if(list.invoke("size").eq(JExpr.lit(1)));
-                        condition._then().assign(obj, model.ref(Optional.class).staticInvoke("of").arg(list.invoke("get").arg(JExpr.lit(0))));
-
-                        condition = condition._elseif(list.invoke("size").eq(JExpr.lit(0)));
-                        condition._then().assign(obj, model.ref(Optional.class).staticInvoke("empty"));
-                        condition._else()._throw(JExpr._new(model.ref(MultipleObjectsReturned.class)));
-
-                        args.add(obj);
-                    } else {
-                        JClass varType = model.ref(variable.getTypeInfo().getType()).narrow(model.ref(genericType.get()));
-                        JVar list = method.body().decl(varType, "list" + i);
-                        method.body().assign(list, JExpr.cast(varType, map.invoke("get").arg("#result-set-" + i)));
-                        args.add(list);
-                    }
+                    JClass varType = model.ref(variable.getTypeInfo().getType()).narrow(model.ref(genericType.get()));
+                    JVar list = method.body().decl(varType, "list" + i);
+                    method.body().assign(list, JExpr.cast(varType, map.invoke("get").arg("#result-set-" + i)));
+                    args.add(list);
                 } else {
                     JClass varType = CodeModelUtil.getGenericList(model, variable.getTypeInfo().getType());
                     JVar list = method.body().decl(varType, "list" + i);
@@ -495,7 +479,7 @@ public class DtoGenerator extends AbstractGenerator {
          * Adds the interceptor call of the after method.
          */
         private void addInterceptorCallAfter(StoredProcedureMethod storedProcedureMethod, JMethod method, JInvocation execute, JVar interceptorIdObject) {
-            if(interceptorIdObject != null) {
+            if (interceptorIdObject != null) {
                 JInvocation after = model.ref(config.getProperty("interceptor")).staticInvoke("after");
                 after.arg(interceptorIdObject);
                 after.arg(JExpr.lit(storedProcedureMethod.getStoredProcedureName()));
