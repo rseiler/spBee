@@ -1,13 +1,11 @@
 package at.rseiler.spbee.generator;
 
 import com.sun.codemodel.*;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class ModelGenerator {
@@ -17,16 +15,6 @@ public class ModelGenerator {
     private final String spName;
     private final String spArgs;
 
-    public static void main(String[] args) throws IOException, SQLException, JClassAlreadyExistsException {
-        ClassPathXmlApplicationContext ctx = new ClassPathXmlApplicationContext("context.xml");
-        DataSource dataSource = (DataSource) ctx.getBean("dataSource");
-
-        String[] spArgs = Arrays.copyOfRange(args, 2, args.length);
-        String spArgString = String.join(",", spArgs);
-
-        new ModelGenerator(dataSource, args[0], args[1], spArgString).execute();
-    }
-
     public ModelGenerator(DataSource dataSource, String packageName, String spName, String spArgs) {
         this.dataSource = dataSource;
         this.packageName = packageName;
@@ -34,7 +22,7 @@ public class ModelGenerator {
         this.spArgs = spArgs;
     }
 
-    public void execute() {
+    public List<ClassData> execute() {
         try (Connection connection = dataSource.getConnection(); CallableStatement statement = connection.prepareCall("{call " + spName + " (" + spArgs + ")}")) {
             List<ColumnDataList> columnDataLists = new ArrayList<>();
 
@@ -53,7 +41,7 @@ public class ModelGenerator {
                 } while (statement.getMoreResults());
             }
 
-            generateSpBeeModelClasses(spName, columnDataLists);
+            return generateSpBeeModelClasses(spName, columnDataLists);
         } catch (SQLException | JClassAlreadyExistsException | IOException e) {
             throw new RuntimeException("Error", e);
         }
@@ -71,43 +59,51 @@ public class ModelGenerator {
         columnDataLists.add(new ColumnDataList(rs.next(), columnDataList));
     }
 
-    private void generateSpBeeModelClasses(String spName, List<ColumnDataList> columnDataLists) throws JClassAlreadyExistsException, IOException {
+    private List<ClassData> generateSpBeeModelClasses(String spName, List<ColumnDataList> columnDataLists) throws JClassAlreadyExistsException, IOException {
+        List<ClassData> result = new ArrayList<>();
+
         if (columnDataLists.size() > 1) {
-            generateResultSetClass(spName, columnDataLists);
+            result.add(generateResultSetClass(spName, columnDataLists));
         }
 
-        generateEntityClass(spName, columnDataLists);
+        result.addAll(generateEntityClass(spName, columnDataLists));
+        return result;
     }
 
-    private void generateResultSetClass(String spName, List<ColumnDataList> columnDataLists) throws JClassAlreadyExistsException, IOException {
+    private ClassData generateResultSetClass(String spName, List<ColumnDataList> columnDataLists) throws JClassAlreadyExistsException, IOException {
         JCodeModel model = new JCodeModel();
-        JPackage jPackage = model._package(packageName + ".resultset");
-        JDefinedClass resultSetClass = jPackage._class(StringUtil.transformToJavaClassName(spName));
+        String resultPackageName = packageName + ".resultset";
+        JPackage jPackage = model._package(resultPackageName);
+        String resultClassName = StringUtil.transformToJavaClassName(spName);
+        JDefinedClass resultSetClass = jPackage._class(resultClassName);
         resultSetClass.annotate(at.rseiler.spbee.core.annotation.ResultSet.class);
         JMethod constructor = resultSetClass.constructor(JMod.PUBLIC);
 
-        int i = 1;
-        for (ColumnDataList columnDataList : columnDataLists) {
-            String className = StringUtil.transformToJavaClassName(spName) + "ResultSet" + i;
-            String variableName = StringUtil.firstCharToLowerCase(className);
+        for (int i = 0; i < columnDataLists.size(); i++) {
+            ColumnDataList columnDataList = columnDataLists.get(i);
+            String entityClassName = resultClassName + (columnDataLists.size() > 1 ? "ResultSet" + (i + 1) : "");
+            String variableName = StringUtil.firstCharToLowerCase(entityClassName);
             JClass aClass = columnDataList.hasSeveralRows() ?
-                    model.ref(List.class.getCanonicalName()).narrow(model.ref(packageName + ".entity." + className)) :
-                    model.ref(packageName + ".entity." + className);
+                    model.ref(List.class.getCanonicalName()).narrow(model.ref(packageName + ".entity." + entityClassName)) :
+                    model.ref(packageName + ".entity." + entityClassName);
             JFieldVar field = resultSetClass.field(JMod.PRIVATE, aClass, variableName);
             JVar param = constructor.param(aClass, variableName);
             constructor.body().assign(JExpr._this().ref(field), param);
-            i++;
         }
 
-        System.out.println(getJavaCode(model));
+        return new ClassData(resultClassName, resultPackageName, getJavaCode(model));
     }
 
-    private void generateEntityClass(String spName, List<ColumnDataList> columnDataLists) throws JClassAlreadyExistsException, IOException {
-        int i = 1;
-        for (ColumnDataList columnDataList : columnDataLists) {
+    private List<ClassData> generateEntityClass(String spName, List<ColumnDataList> columnDataLists) throws JClassAlreadyExistsException, IOException {
+        List<ClassData> result = new ArrayList<>();
+
+        for (int i = 0; i < columnDataLists.size(); i++) {
+            ColumnDataList columnDataList = columnDataLists.get(i);
             JCodeModel model = new JCodeModel();
-            JPackage jPackage = model._package(packageName);
-            JDefinedClass resultSetClass = jPackage._class(StringUtil.transformToJavaClassName(spName) + "ResultSet" + i);
+            String entityPackageName = packageName + ".entity";
+            JPackage jPackage = model._package(entityPackageName);
+            String entityClassName = StringUtil.transformToJavaClassName(spName) + (columnDataLists.size() > 1 ? "ResultSet" + (i + 1) : "");
+            JDefinedClass resultSetClass = jPackage._class(entityClassName);
             resultSetClass.annotate(at.rseiler.spbee.core.annotation.Entity.class);
             JMethod constructor = resultSetClass.constructor(JMod.PUBLIC);
 
@@ -119,11 +115,10 @@ public class ModelGenerator {
                 constructor.body().assign(JExpr._this().ref(field), param);
             }
 
-            i++;
-            System.out.println("\n--------------------------------------------------------------------------------\n");
-            System.out.println(getJavaCode(model));
+            result.add(new ClassData(entityClassName, entityPackageName, getJavaCode(model)));
         }
 
+        return result;
     }
 
     private JType getFieldClass(JCodeModel model, int type) {

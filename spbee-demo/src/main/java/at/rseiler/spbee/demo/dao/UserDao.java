@@ -12,7 +12,9 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.SQLSyntaxErrorException;
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * @author Reinhard Seiler {@literal <rseiler.developer@gmail.com>}
@@ -27,6 +29,9 @@ public interface UserDao {
     User getUser(int id);
 
     @StoredProcedure(SpName.GET_USER)
+    Optional<User> getUserOptional(int id);
+
+    @StoredProcedure(SpName.GET_USER)
     @MappingConstructor(McName.SIMPLE_USER)
     User getSimpleUserMappingConstructor(int id);
 
@@ -39,6 +44,6 @@ public interface UserDao {
 
     @Transactional(isolation = Isolation.SERIALIZABLE, rollbackFor = {SQLSyntaxErrorException.class, HsqlException.class})
     @StoredProcedure(SpName.SAVE_USER)
-    void saveUser(int id, String name);
+    void saveUser(int id, String name, Timestamp created);
 
 }

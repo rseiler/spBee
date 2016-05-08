@@ -56,13 +56,13 @@ public abstract class AbstractUserDao {
 
     public User userDataSourceDirectly(int id) {
         try (Connection connection = dataSource.getConnection();
-             PreparedStatement statement = connection.prepareStatement("SELECT id, name FROM USER WHERE id=?")
+             PreparedStatement statement = connection.prepareStatement("SELECT id, name, created FROM USER WHERE id=?")
         ) {
             statement.setInt(1, id);
             try (ResultSet resultSet = statement.executeQuery()) {
 
                 if (resultSet.next()) {
-                    return new User(resultSet.getInt(1), resultSet.getString(2));
+                    return new User(resultSet.getInt(1), resultSet.getString(2), resultSet.getTimestamp(3));
                 }
             }
         } catch (SQLException e) {

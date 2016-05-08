@@ -32,7 +32,6 @@ public class AbstractUserDaoTest extends AbstractTest {
         assertFalse(user.isPresent());
     }
 
-
     @Test
     public void testGetSimpleUsersWithOwnMapper() throws Exception {
         List<User> users = abstractUserDao.getSimpleUsersWithOwnMapper();

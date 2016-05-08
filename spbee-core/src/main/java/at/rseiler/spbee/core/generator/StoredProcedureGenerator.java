@@ -270,8 +270,11 @@ public class StoredProcedureGenerator extends AbstractGenerator {
             case "java.lang.String":
                 return "VARCHAR";
             case "java.sql.Date":
-            case "java.util.Date":
                 return "DATE";
+            case "java.sql.Timestamp":
+                return "TIMESTAMP";
+            case "java.sql.Time":
+                return "TIME";
             case "java.math.BigDecimal":
                 return "DOUBLE";
             default:
@@ -304,8 +307,11 @@ public class StoredProcedureGenerator extends AbstractGenerator {
                 return "numeric";
             case "java.lang.String[]":
                 return "varchar";
+            case "java.sql.Timestamp":
+                return "timestamp";
+            case "java.sql.Time":
+                return "time";
             case "java.sql.Date[]":
-            case "java.util.Date[]":
                 return "date";
         }
 

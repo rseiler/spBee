@@ -10,6 +10,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.tools.JavaFileObject;
 import java.io.IOException;
 import java.io.StringWriter;
+import java.sql.Timestamp;
 import java.util.*;
 
 import static at.rseiler.spbee.core.generator.GeneratorUtil.*;
@@ -73,15 +74,17 @@ public class StoredProcedureGeneratorTest {
                         .build()
                         .addArgument(new Variable("id", int.class.getCanonicalName()))
                         .addArgument(new Variable("name", String.class.getCanonicalName()))
+                        .addArgument(new Variable("timestamp", Timestamp.class.getCanonicalName()))
         );
 
         String javaCode = generateJavaCode(dtoClass, resultSetClassMap, entityNames);
 
         assertContains(javaCode,
-                "declareParameter(new org.springframework.jdbc.core.SqlParameter(\"id\", Types.INTEGER));",
-                "declareParameter(new org.springframework.jdbc.core.SqlParameter(\"name\", Types.VARCHAR));",
-                "execute(int id, String name)",
-                "return super.execute(id, name);"
+                "declareParameter(new SqlParameter(\"id\", Types.INTEGER));",
+                "declareParameter(new SqlParameter(\"name\", Types.VARCHAR));",
+                "declareParameter(new SqlParameter(\"timestamp\", Types.TIMESTAMP));",
+                "execute(int id, String name, Timestamp timestamp)",
+                "return super.execute(id, name, timestamp);"
         );
     }
 
@@ -157,8 +160,8 @@ public class StoredProcedureGeneratorTest {
         String javaCode = generateJavaCode(dtoClass, resultSetClassMap, entityNames);
 
         assertContains(javaCode,
-                "declareParameter(new org.springframework.jdbc.core.SqlReturnResultSet(\"#result-set-0\", new Test1EntityDefaultMapper()));",
-                "declareParameter(new org.springframework.jdbc.core.SqlReturnResultSet(\"#result-set-1\", new Test2EntityDefaultMapper()));"
+                "declareParameter(new SqlReturnResultSet(\"#result-set-0\", new Test1EntityDefaultMapper()));",
+                "declareParameter(new SqlReturnResultSet(\"#result-set-1\", new Test2EntityDefaultMapper()));"
         );
     }
 
@@ -189,8 +192,8 @@ public class StoredProcedureGeneratorTest {
         assertContains(javaCode,
                 "import at.rseiler.spbee.test.entity.mapper.Test1EntitySpTest1Mapper",
                 "import at.rseiler.spbee.test.entity.mapper.Test2EntitySpTest2Mapper",
-                "declareParameter(new org.springframework.jdbc.core.SqlReturnResultSet(\"#result-set-0\", new Test1EntitySpTest1Mapper()));",
-                "declareParameter(new org.springframework.jdbc.core.SqlReturnResultSet(\"#result-set-1\", new Test2EntitySpTest2Mapper()));"
+                "declareParameter(new SqlReturnResultSet(\"#result-set-0\", new Test1EntitySpTest1Mapper()));",
+                "declareParameter(new SqlReturnResultSet(\"#result-set-1\", new Test2EntitySpTest2Mapper()));"
         );
     }
 
@@ -218,8 +221,8 @@ public class StoredProcedureGeneratorTest {
         String javaCode = generateJavaCode(dtoClass, resultSetClassMap, entityNames);
 
         assertContains(javaCode,
-                "declareParameter(new org.springframework.jdbc.core.SqlReturnResultSet(\"#result-set-0\", new SpecialMapper()));",
-                "declareParameter(new org.springframework.jdbc.core.SqlReturnResultSet(\"#result-set-1\", new SpecialMapper()));"
+                "declareParameter(new SqlReturnResultSet(\"#result-set-0\", new SpecialMapper()));",
+                "declareParameter(new SqlReturnResultSet(\"#result-set-1\", new SpecialMapper()));"
         );
     }
 

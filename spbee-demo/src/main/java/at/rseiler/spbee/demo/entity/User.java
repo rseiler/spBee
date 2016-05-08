@@ -4,6 +4,9 @@ import at.rseiler.spbee.core.annotation.Entity;
 import at.rseiler.spbee.core.annotation.MappingConstructor;
 import at.rseiler.spbee.demo.McName;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,24 +18,26 @@ public class User {
 
     private int id;
     private String name;
+    private LocalDateTime created;
     private List<Permission> permissions;
 
     private User() {
     }
 
     @MappingConstructor
-    public User(int id, String name) {
-        this(id, name, new ArrayList<>());
+    public User(int id, String name, Timestamp created) {
+        this(id, name, created, new ArrayList<>());
     }
 
     @MappingConstructor(McName.SIMPLE_USER)
     public User(int id) {
-        this(id, "-", new ArrayList<>());
+        this(id, "-", null, new ArrayList<>());
     }
 
-    public User(int id, String name, List<Permission> permissions) {
+    public User(int id, String name, Timestamp created, List<Permission> permissions) {
         this.id = id;
         this.name = name;
+        this.created = created != null ? created.toLocalDateTime().atZone(ZoneId.systemDefault()).toLocalDateTime() : null;
         this.permissions = permissions;
     }
 
@@ -44,6 +49,10 @@ public class User {
         return name;
     }
 
+    public LocalDateTime getCreated() {
+        return created;
+    }
+
     public List<Permission> getPermissions() {
         return permissions;
     }
@@ -53,6 +62,7 @@ public class User {
         return "User{" +
                 "id=" + id +
                 ", name='" + name + '\'' +
+                ", created=" + created +
                 ", permissions=" + permissions +
                 '}';
     }

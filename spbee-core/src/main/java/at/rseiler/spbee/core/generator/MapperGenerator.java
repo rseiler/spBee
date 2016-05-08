@@ -140,8 +140,11 @@ public class MapperGenerator extends AbstractGenerator {
             case "java.lang.String":
                 return "getString";
             case "java.sql.Date":
-            case "java.util.Date":
                 return "getDate";
+            case "java.sql.Timestamp":
+                return "getTimestamp";
+            case "java.sql.Time":
+                return "getTime";
             case "java.math.BigDecimal":
                 return "getBigDecimal";
             default:

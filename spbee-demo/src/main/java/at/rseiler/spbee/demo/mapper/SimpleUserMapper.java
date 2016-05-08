@@ -18,6 +18,7 @@ public class SimpleUserMapper implements RowMapper<User> {
         return new User(
                 rs.getInt(1),
                 "not loaded",
+                null,
                 new ArrayList<>());
     }
 
